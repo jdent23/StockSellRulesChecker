@@ -478,7 +478,7 @@ class StockScreener:
 
     primary_rules = ['eps_QoQ_yearly_rule', 'sales_QoQ_yearly_rule', 'SMA200_slope_rule', 
                  'SMA150_greater_SMA200_rule', 'SMA50_greater_SMA150_rule', 'close_greater_SMA50_rule', 
-                 'week52_span_rule', 'close_above_52weekhigh_rule','rs_value_rule']
+                 'week52_span_rule', 'close_above_52weekhigh_rule','rs_value_rule', 'liquidity_rule']
 
     secondary_rules = ['vol_price_rule', 'inst_ownership_rule', 'shares_outstanding_rule']
     df_out['Primary Passed Tests'] = (df_out[list(primary_rules)]).sum(1)
