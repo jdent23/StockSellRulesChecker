@@ -21,7 +21,7 @@ class StockScreener:
   @staticmethod
   def initial_screen():
     eps_5year_over0pct = False
-    eps_qoq_over0pct = False
+    eps_qoq_over0pct = True
     eps_yoy_over0pct = False
     sales_5years_over0pct = False
     sales_qoq_over0pct = False
@@ -260,10 +260,6 @@ class StockScreener:
       RS_value = StockScreener.relative_strength(yahoo_df, sp500_df)
       SMA50_volume_value = StockScreener.moving_average_volume(yahoo_df, days=50)
 
-      # Liquidity Rule
-      if SMA50_value*SMA50_volume_value <= 20e6:
-        return
-
       SMA200_percent = float(finviz_stats['SMA200'].replace("%",""))/100
       SMA50_percent = float(finviz_stats['SMA50'].replace("%",""))/100
       volume = float(finviz_stats['Volume'].replace(",",""))
@@ -322,6 +318,17 @@ class StockScreener:
       screened_stocks[stock['Ticker']]['rs_value_rule'] = rs_value_rule
       screened_stocks[stock['Ticker']]['rs_value_rule_score'] = score*n_value
       screened_stocks[stock['Ticker']]['rs_value_rule_nvalue'] = n_value
+
+      # Liquidity Rule
+      if SMA50_value*SMA50_volume_value <= 20e6:
+        liquidity_rule = False
+        n_value = 0
+      else:
+        liquidity_rule = True
+        n_value = 2**8
+      screened_stocks[stock['Ticker']]['liquidity_rule'] = liquidity_rule
+      screened_stocks[stock['Ticker']]['liquidity_rule_score'] = score*n_value
+      screened_stocks[stock['Ticker']]['liquidity_rule_nvalue'] = n_value
 
       # volume*price > $15mm rule
       if volume*prev_close > 15000000:
@@ -392,7 +399,7 @@ class StockScreener:
       screened_stocks[stock['Ticker']]['inst_ownership_rule_nvalue'] = n_value
 
 
-      # Positive 200d MA positive
+      # Positive 200d MA
       SMA200_slope_rule, score, n_value = StockScreener.SMA200_slope_positive_rule(yahoo_df, ticker=stock['Ticker'], days=21)
       screened_stocks[stock['Ticker']]['SMA200_slope_rule'] = SMA200_slope_rule
       screened_stocks[stock['Ticker']]['SMA200_slope_rul_score'] = n_value*score

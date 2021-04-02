@@ -10,6 +10,12 @@ from flask import send_file, send_from_directory, safe_join, abort
 app = Flask(__name__)
 date = datetime.now()
 filename = 'screener_results.csv'
+
+
+@app.route("/rules")
+def show_rules():
+    return render_template('rules.html')
+
 @app.route("/")
 def show_tables():
     data = pd.read_csv(filename)
