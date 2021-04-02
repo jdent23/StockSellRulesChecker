@@ -15,6 +15,7 @@ nest_asyncio.apply()
 import time
 from tqdm.contrib.concurrent import process_map
 from tqdm import tqdm
+from shutil import copyfile
 
 class StockScreener:
 
@@ -438,6 +439,7 @@ class StockScreener:
         n_value = 2**1
       else:
         eps_QoQ_yearly_rule = False
+        n_value = 0
 
       score = StockScreener.percent_diff(EPS_QoQ_percent, 0.18)
       screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule'] = eps_QoQ_yearly_rule
@@ -482,15 +484,15 @@ class StockScreener:
   def main_screen(stock_list):
 
     results = []
-    # for stock in tqdm(stock_list, total=len(stock_list.data)):
-    #   try:
-    #     result = StockScreener.screen_stock(stock)
-    #     results.append(result)
-    #   except:
-    #     continue
+    for stock in tqdm(stock_list, total=len(stock_list.data)):
+      try:
+        result = StockScreener.screen_stock(stock)
+        results.append(result)
+      except:
+        continue
 
     # Digital Ocean Does Not Support Multiprocessing
-    results = process_map(StockScreener.screen_stock, stock_list, max_workers=8)
+    # results = process_map(StockScreener.screen_stock, stock_list, max_workers=8)
 
     screened_stocks = {}
     for d in results:
@@ -534,6 +536,8 @@ class StockScreener:
     return df
 
   def screen(self):
+    print("Saving Current Table")
+    copyfile("screener_results.csv","screener_results_prev.csv")
     print("Starting Screener")
     stock_list = StockScreener.initial_screen()
     print("Initial Screen Done")
@@ -542,7 +546,7 @@ class StockScreener:
     df_out = StockScreener.cleanup_screen(df_out)
     print("Cleanup Screen Done")
     df_clean = StockScreener.chart_pattern_screen(df_out)
-    print("Scoring the stocks")
+    print("Scoring the Stocks")
     df_scored = StockScreener.score_stocks(df_clean)
     return df_scored
 

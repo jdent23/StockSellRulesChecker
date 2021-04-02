@@ -42,6 +42,7 @@ def show_tables():
     remaining_cols = list(set(cols) - set(cols_order))
     data = data[cols_order+remaining_cols]
     data = data.sort_values(by=['N-Value Rating', 'Lwowski Rating'], ascending=False)
+    data.to_csv(filename)
     data =  data.style.apply(color_passing_tests).render()
 
     fname = pathlib.Path(filename)
