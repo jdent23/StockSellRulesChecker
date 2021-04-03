@@ -38,9 +38,11 @@ def show_tables():
     cols_first_rules = [col for col in cols if "(1st)" in col]
     cols_second_rules = [col for col in cols if "(2nd)" in col]
     cols_patterns = [col for col in cols if "Pattern" in col]
+    cols_nvalue = [col for col in cols if "nvalue" in col]
+    cols_score = [col for col in cols if "score" in col]
     cols_order = ['Ticker', 'N-Value Rating', 'Lwowski Rating', 'Primary Passed Tests', 'Secondary Passed Tests'] + cols_first_rules + cols_second_rules + cols_patterns
-    remaining_cols = list(set(cols) - set(cols_order))
-    data = data[cols_order+remaining_cols]
+    remaining_cols = list(set(cols) - set(cols_order) -set(cols_nvalue) - set(cols_score))
+    data = data[cols_order+remaining_cols+cols_nvalue+cols_score]
     data = data.sort_values(by=['N-Value Rating', 'Lwowski Rating'], ascending=False)
     data.to_csv(filename)
     data =  data.style.apply(color_passing_tests).render()

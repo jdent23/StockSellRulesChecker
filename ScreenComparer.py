@@ -4,11 +4,37 @@ import numpy as np
 class ScreenComparer:
 
     @staticmethod
-    def diff_pd(df1, df2, df_ticker, cols):
-        df_out = df_ticker
+    def compare_pd(df1, df2, cols):
+        df1_tickers = df1['Ticker'].to_list()
+        df2_tickers = df2['Ticker'].to_list()
+
+        diff_tickers_1 = list(set(df1_tickers) - set(df2_tickers)) 
+        diff_tickers_2 = list(set(df2_tickers) - set(df1_tickers)) 
+        diff_tickers = diff_tickers_1 + diff_tickers_2
+        
+        df_same_1 = df1[~df1['Ticker'].isin(diff_tickers)]
+        df_same_2 = df2[~df2['Ticker'].isin(diff_tickers)]
+        df_diff_1 = df1[df1['Ticker'].isin(diff_tickers)]
+        df_diff_2 = df2[df2['Ticker'].isin(diff_tickers)]
+
+        df_same_2 = df_same_2.set_index('Ticker')
+        df_same_2 = df_same_2.reindex(index=df_same_1['Ticker'])
+        df_same_2 = df_same_2.reset_index()
+        df_same_2 = df_same_2.replace({'False': False, 'True': True})
+
+        df_same_1 = df_same_1.set_index('Ticker')
+        df_same_1 = df_same_1.reindex(index=df_same_2['Ticker'])
+        df_same_1 = df_same_1.reset_index()
+        df_same_1 = df_same_1.replace({'False': False, 'True': True})
+
+        df_out = df_same_1[['Ticker']]
+        
         for col in cols:
             col_temp = col.replace(" (1st)", "").replace(" (2nd)","")
-            df_out['{} Different?'.format(col_temp)] = np.where(df1[col] != df2[col], 'True', 'False')
+            df_out['{} Different?'.format(col_temp)] = np.where(df_same_1[col] != df_same_2[col], 'True', 'False')
+
+        df_out = df_out.replace({'False': False, 'True': True})
+        df_out = df_out[df_out.drop(['Ticker'], axis=1).any(axis=1)]
         return df_out
 
     @staticmethod
@@ -16,12 +42,12 @@ class ScreenComparer:
         old_screen_df = pd.read_csv(old_screen)
         new_screen_df = pd.read_csv(new_screen)
         cols = old_screen_df.columns
-        rule_cols = [col for col in cols if "rule" in col]
+        rule_cols = ['Ticker'] + [col for col in cols if "rule" in col and "score" not in col and "nvalue" not in col] 
 
         old_screen_rules_df = old_screen_df[rule_cols]
         new_screen_rules_df = new_screen_df[rule_cols]
 
-        diff_df = ScreenComparer.diff_pd(old_screen_rules_df, new_screen_rules_df, new_screen_df[['Ticker']], rule_cols)
+        diff_df = ScreenComparer.compare_pd(old_screen_rules_df, new_screen_rules_df, rule_cols)
         diff_df.to_csv("screener_comparison.csv")
 
 if __name__ == "__main__":
