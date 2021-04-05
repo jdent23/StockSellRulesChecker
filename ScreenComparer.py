@@ -27,7 +27,7 @@ class ScreenComparer:
         df_same_1 = df_same_1.reset_index()
         df_same_1 = df_same_1.replace({'False': False, 'True': True})
 
-        df_out = df_same_1[['Ticker']]
+        df_out = df_same_1[['Ticker','N-Value Rating']]
         
         for col in cols:
             col_temp = col.replace(" (1st)", "").replace(" (2nd)","")
@@ -42,14 +42,16 @@ class ScreenComparer:
         old_screen_df = pd.read_csv(old_screen)
         new_screen_df = pd.read_csv(new_screen)
         cols = old_screen_df.columns
-        rule_cols = ['Ticker'] + [col for col in cols if "rule" in col and "score" not in col and "nvalue" not in col] 
+        print(cols)
+        rule_cols = ['Ticker', 'N-Value Rating'] + [col for col in cols if "rule" in col and "score" not in col and "nvalue" not in col] 
 
         old_screen_rules_df = old_screen_df[rule_cols]
         new_screen_rules_df = new_screen_df[rule_cols]
 
         diff_df = ScreenComparer.compare_pd(old_screen_rules_df, new_screen_rules_df, rule_cols)
+        diff_df = diff_df.sort_values(by=['N-Value Rating'], ascending=False)
         diff_df.to_csv("screener_comparison.csv")
 
 if __name__ == "__main__":
   comparer = ScreenComparer()
-  comparer.compare_screen("screener_results_prev.csv","screener_results.csv")
+  comparer.compare_screen("screener_results_2021_4_2.csv","screener_results_2021_4_5.csv")
