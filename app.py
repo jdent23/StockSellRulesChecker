@@ -4,14 +4,13 @@ from flask_apscheduler import APScheduler
 from Screener import StockScreener
 from ScreenComparer import ScreenComparer
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 import pathlib
 from flask import send_file, send_from_directory, safe_join, abort
 
 app = Flask(__name__)
 date = datetime.now()
-filename = 'screener_results.csv'
-prev_filename = 'screener_results_prev.csv'
+filename = 'screener_results'
 compare_filename = 'screener_comparison.csv'
 
 @app.route("/rules")
@@ -30,7 +29,9 @@ def show_comparison():
 
 @app.route("/")
 def show_tables():
-    data = pd.read_csv(filename)
+    date = datetime.now()
+    curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+    data = pd.read_csv(curr_filename)
     data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
 
@@ -44,10 +45,10 @@ def show_tables():
     remaining_cols = list(set(cols) - set(cols_order) -set(cols_nvalue) - set(cols_score))
     data = data[cols_order+remaining_cols+cols_nvalue+cols_score]
     data = data.sort_values(by=['N-Value Rating', 'Lwowski Rating'], ascending=False)
-    data.to_csv(filename)
+    data.to_csv(curr_filename)
     data =  data.style.apply(color_passing_tests).render()
 
-    fname = pathlib.Path(filename)
+    fname = pathlib.Path(curr_filename)
     date = datetime.now()
     return render_template('view.html',tables=[data], date=date, titles = ['Stock Screener Results'])
 
@@ -66,8 +67,10 @@ def color_passing_tests(s):
 #background process happening without any refreshing
 @app.route('/export_table')
 def export_table():
-    print("Sending CSV: ", filename)
-    safe_path = safe_join(filename)
+    date = datetime.now()
+    curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+    print("Sending CSV: ", curr_filename)
+    safe_path = safe_join(curr_filename)
     try:
         return send_file(safe_path, as_attachment=True)
     except FileNotFoundError:
@@ -83,16 +86,24 @@ def export_comparison_table():
     except FileNotFoundError:
         abort(404)
 
+def prev_weekday(adate):
+    adate -= timedelta(days=1)
+    while adate.weekday() > 4: # Mon-Fri are 0-4
+        adate -= timedelta(days=1)
+    return adate
+    
 def run_screener():
     print("Running Screener", file=sys.stdout)
-    screener = StockScreener()
-    df_final = screener.screen(prev_filename,filename)
+    #screener = StockScreener()
+    #df_final = screener.screen()
     date = datetime.now()
-    df_final.to_csv(filename)
+    prev_date = prev_weekday(date)
+    curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+    prev_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)
+    #df_final.to_csv(curr_filename)
     comparer = ScreenComparer()
-    comparer.compare_screen(prev_filename, filename)
+    comparer.compare_screen(prev_filename, curr_filename)
 
-run_screener()
 scheduler = APScheduler()
 scheduler.add_job(func=run_screener, args=None, trigger='cron', id='job', hour='6', minute='0')
 scheduler.start()

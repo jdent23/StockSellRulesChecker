@@ -535,9 +535,7 @@ class StockScreener:
 
     return df
 
-  def screen(self, prev_filename, filename):
-    print("Saving Current Table")
-    copyfile(filename,prev_filename)
+  def screen(self):
     print("Starting Screener")
     stock_list = StockScreener.initial_screen()
     print("Initial Screen Done")
