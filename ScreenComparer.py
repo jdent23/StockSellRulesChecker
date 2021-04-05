@@ -34,7 +34,7 @@ class ScreenComparer:
             df_out['{} Different?'.format(col_temp)] = np.where(df_same_1[col] != df_same_2[col], 'True', 'False')
 
         df_out = df_out.replace({'False': False, 'True': True})
-        df_out = df_out[df_out.drop(['Ticker'], axis=1).any(axis=1)]
+        df_out = df_out[df_out.drop(['Ticker', 'N-Value Rating'], axis=1).any(axis=1)]
         return df_out
 
     @staticmethod
