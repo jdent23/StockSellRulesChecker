@@ -63,22 +63,24 @@ class StockScreener:
       return float(df_days['Volume'].mean())
 
   @staticmethod
-  def relative_strength(yahoo_df, sp500_df, days=60, smoothing=2):
+  def relative_strength(yahoo_df, sp500_df, days=65):
+    closes = yahoo_df['Close'].tolist()
+    closes.reverse()
 
-    ratios = []
-    for i in range(days+1,0, -1):
-      curr_price = yahoo_df['Close'].tolist()[i]
-      prev_price = yahoo_df['Close'].tolist()[i-1]
+    sp_closes = sp500_df['Close'].tolist()
+    sp_closes.reverse()
 
-      curr_price_sp500 = sp500_df['Close'].tolist()[i]
-      prev_price_sp500 = sp500_df['Close'].tolist()[i-1]
+    # Calculate Relative Performance Indicator
+    RPs = []
+    for i in range(days):
+      RPs.append((closes[i]/ sp_closes[i])*100)
 
-      if curr_price != prev_price and curr_price_sp500 != prev_price_sp500:
-        ratio = ((curr_price-prev_price)/prev_price) / ((curr_price_sp500-prev_price_sp500)/prev_price_sp500)
-        ratios.append(ratio)
-    pd_ratios = pd.Series(ratios)
-    rs = pd_ratios.ewm(span=60, adjust=False).mean().to_list()[-1]
-    return rs
+    # Calcuate SMA of RPs
+    SMA = sum(RPs)/len(RPs)
+
+    # Calculate Mansfield Relative Performance indicator
+    MRP = ((RPs[0]/SMA) - 1) * 100
+    return MRP
 
   @staticmethod
   def percent_diff(current, ref):
@@ -232,6 +234,7 @@ class StockScreener:
   @staticmethod
   def screen_stock(stock):
     try:
+      print(stock['Ticker'])
       screened_stocks = {}
 
       if stock["Ticker"] == "":
@@ -483,22 +486,23 @@ class StockScreener:
   @staticmethod
   def main_screen(stock_list):
 
-    results = []
-    for stock in tqdm(stock_list, total=len(stock_list.data)):
-      try:
-        result = StockScreener.screen_stock(stock)
-        results.append(result)
-      except:
-        continue
+    # results = []
+    # for stock in tqdm(stock_list, total=len(stock_list.data)):
+    #   try:
+    #     result = StockScreener.screen_stock(stock)
+    #     results.append(result)
+    #   except:
+    #     continue
 
     # Digital Ocean Does Not Support Multiprocessing
-    # results = process_map(StockScreener.screen_stock, stock_list, max_workers=8)
+    results = process_map(StockScreener.screen_stock, stock_list, max_workers=8)
 
     screened_stocks = {}
     for d in results:
       if d is not None:
         screened_stocks.update(d)
       
+    print(results)
     output_list = []
     for stock in screened_stocks.keys():
         cols = ["Ticker"] + list(screened_stocks[stock].keys())
