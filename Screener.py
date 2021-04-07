@@ -357,11 +357,11 @@ class StockScreener:
 
       # Liquidity Rule
       if SMA50_value*SMA50_volume_value <= 20e6:
-        liquidity_rule = False
-        n_value = 0
-      else:
         liquidity_rule = True
         n_value = 2**8
+      else:
+        liquidity_rule = False
+        n_value = 0
       screened_stocks[stock['Ticker']]['liquidity_rule'] = liquidity_rule
       screened_stocks[stock['Ticker']]['liquidity_rule_score'] = score*n_value
       screened_stocks[stock['Ticker']]['liquidity_rule_nvalue'] = n_value
