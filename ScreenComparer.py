@@ -36,7 +36,8 @@ class ScreenComparer:
         for col in cols:
             col_temp = col.replace(" (1st)", "").replace(" (2nd)","")
             df_out['{} Different?'.format(col_temp)] = np.where(df_same_1[col] != df_same_2[col], 'True', 'False')
-            df_out['{} Entered/Exited Rule?'.format(col_temp)] = np.where(df_same_1[col] < df_same_2[col], 'Entered Rule', 'Exited Rule')
+            
+            df_out['{} Entered/Exited Rule?'.format(col_temp)] = np.where(df_same_1[col] < df_same_2[col], 'Entered Rule', np.where(df_same_1[col] > df_same_2[col], 'Exited Rule', 'Did Not Change'))
 
         # Add stocks that do not exist if df2
         cols = df_out.columns
@@ -61,7 +62,7 @@ class ScreenComparer:
         for col in cols:
             if "Entered/Exited Rule?" in col:
                 to_drop.append(col)
-                
+
         df_out = df_out[df_out.drop(to_drop, axis=1).any(axis=1)]
         return df_out
 
