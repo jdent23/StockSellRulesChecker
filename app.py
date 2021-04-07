@@ -20,9 +20,12 @@ def show_rules():
 @app.route("/comparison")
 def show_comparison():
     data = pd.read_csv(compare_filename)
+
+    different_cols = [col for col in data.columns if "Different?" in col]
+    data = data.drop(['Ticker Entered/Exited Rule?', 'N-Value Rating Entered/Exited Rule?'] + different_cols, axis=1)
     data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
-    data =  data.style.apply(color_passing_tests).render()
+    data =  data.style.apply(color_changing_tests).render()
     fname = pathlib.Path(compare_filename)
     date = datetime.now()
     return render_template('comparison.html',tables=[data], date=date, titles = ['Stock Screener Comparison'])
@@ -51,6 +54,20 @@ def show_tables():
     fname = pathlib.Path(curr_filename)
     date = datetime.now()
     return render_template('view.html',tables=[data], date=date, titles = ['Stock Screener Results'])
+
+def color_changing_tests(s):
+    out = []
+    for idx,v in enumerate(s):
+        if v == "Entered Rule":
+            out.append('background-color: #77dd77')
+        elif v == "Exited Rule":
+            out.append('background-color: #ff5252')
+        else:
+            if idx % 2 == 0:
+                out.append('background-color: #eee')
+            else:
+                out.append('background-color: #fff')
+    return out
 
 def color_passing_tests(s):
     out = []
