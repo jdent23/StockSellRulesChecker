@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 
 class ScreenComparer:
+    @staticmethod
+    def enter_exit_rule(row, col, df1, df2):
+        print(type(row))
 
     @staticmethod
     def compare_pd(df1, df2, cols):
@@ -29,12 +32,37 @@ class ScreenComparer:
 
         df_out = df_same_1[['Ticker','N-Value Rating']]
         
+        # Find changes in existing stocks
         for col in cols:
             col_temp = col.replace(" (1st)", "").replace(" (2nd)","")
             df_out['{} Different?'.format(col_temp)] = np.where(df_same_1[col] != df_same_2[col], 'True', 'False')
+            df_out['{} Entered/Exited Rule?'.format(col_temp)] = np.where(df_same_1[col] < df_same_2[col], 'Entered Rule', 'Exited Rule')
+
+        # Add stocks that do not exist if df2
+        cols = df_out.columns
+        for _, row in df_diff_1.iterrows():
+            new_row = []
+            for col in cols:
+                new_row.append(True)
+        temp_series = pd.Series(new_row, index = df_out.columns)
+        df_out = df_out.append(temp_series, ignore_index=True)
+
+        # Add stocks that do not exist if df1
+        for _, row in df_diff_2.iterrows():
+            new_row = []
+            for col in cols:
+                new_row.append(True)
+        temp_series = pd.Series(new_row, index = df_out.columns)
+        df_out = df_out.append(temp_series, ignore_index=True)
 
         df_out = df_out.replace({'False': False, 'True': True})
-        df_out = df_out[df_out.drop(['Ticker', 'N-Value Rating'], axis=1).any(axis=1)]
+        
+        to_drop = ['Ticker', 'N-Value Rating']
+        for col in cols:
+            if "Entered/Exited Rule?" in col:
+                to_drop.append(col)
+                
+        df_out = df_out[df_out.drop(to_drop, axis=1).any(axis=1)]
         return df_out
 
     @staticmethod
