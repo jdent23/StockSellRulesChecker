@@ -35,6 +35,10 @@ def show_comparison():
 def show_tables():
     date = datetime.now()
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+    
+    if not os.path.filename(curr_filename):
+        run_screener()
+
     data = pd.read_csv(curr_filename)
     data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
