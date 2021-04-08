@@ -36,7 +36,7 @@ def show_tables():
     date = datetime.now()
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
     
-    if not os.path.filename(curr_filename):
+    if not os.path.isfile(curr_filename):
         run_screener()
 
     data = pd.read_csv(curr_filename)
