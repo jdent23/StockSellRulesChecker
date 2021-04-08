@@ -7,6 +7,7 @@ import sys
 from datetime import datetime, timedelta
 import pathlib
 from flask import send_file, send_from_directory, safe_join, abort
+import os
 
 app = Flask(__name__)
 date = datetime.now()
@@ -113,11 +114,18 @@ def run_screener():
     print("Running Screener", file=sys.stdout)
     screener = StockScreener()
     df_final = screener.screen()
+
     date = datetime.now()
-    prev_date = prev_weekday(date)
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-    prev_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)
     df_final.to_csv(curr_filename)
+
+    prev_date = prev_weekday(date)
+    prev_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)
+
+    if not os.path.isfile(prev_filename):
+        temp = prev_weekday(prev_date)
+        prev_filename = "{}_{}_{}_{}.csv".format(filename, temp.year, temp.month, temp.day)
+    
     comparer = ScreenComparer()
     comparer.compare_screen(prev_filename, curr_filename)
 
