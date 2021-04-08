@@ -23,7 +23,7 @@ class StockScreener:
   def initial_screen():
     eps_5year_over0pct = False
     eps_qoq_over0pct = True
-    eps_yoy_over0pct = False
+    eps_yoy_over0pct = True
     sales_5years_over0pct = False
     sales_qoq_over0pct = False
 
