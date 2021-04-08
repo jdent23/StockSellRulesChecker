@@ -543,13 +543,13 @@ class StockScreener:
     print("Starting Screener")
     stock_list = StockScreener.initial_screen()
     print("Initial Screen Done")
-    df_out = StockScreener.main_screen(stock_list)
+    df_out = StockScreener.main_screen(stock_list).astype('float16')
     print("Main Screen Done")
-    df_out = StockScreener.cleanup_screen(df_out)
+    df_out = StockScreener.cleanup_screen(df_out).astype('float16')
     print("Cleanup Screen Done")
-    df_clean = StockScreener.chart_pattern_screen(df_out)
+    df_clean = StockScreener.chart_pattern_screen(df_out).astype('float16')
     print("Scoring the Stocks")
-    df_scored = StockScreener.score_stocks(df_clean)
+    df_scored = StockScreener.score_stocks(df_clean).astype('float16')
     return df_scored
 
 if __name__ == "__main__":
