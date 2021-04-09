@@ -12,4 +12,4 @@ services:
   name: stock-sell-rules-checker
   routes:
   - path: /
-  run_command: gunicorn --worker-tmp-dir /dev/shm app:app
+  run_command: gunicorn --worker-tmp-dir /dev/shm app:app --timeout 120

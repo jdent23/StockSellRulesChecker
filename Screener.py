@@ -50,7 +50,7 @@ class StockScreener:
       
       df_days = df[df['Date'] >= end_date]
       df_days = df_days[df_days['Date'] <= curr_date]
-      return float(df_days['Close'].mean())
+      return round(float(df_days['Close'].mean()), 0)
 
   @staticmethod
   def moving_average_volume(yahoo_df, days, delta=0):
@@ -60,7 +60,7 @@ class StockScreener:
       
       df_days = df[df['Date'] >= end_date]
       df_days = df_days[df_days['Date'] <= curr_date]
-      return float(df_days['Volume'].mean())
+      return round(float(df_days['Volume'].mean()), 0)
 
   @staticmethod
   def relative_strength(yahoo_df, sp500_df, days=65):
@@ -80,7 +80,7 @@ class StockScreener:
 
     # Calculate Mansfield Relative Performance indicator
     MRP = ((RPs[0]/SMA) - 1) * 100
-    return MRP
+    return round(MRP,0)
 
   @staticmethod
   def percent_diff(current, ref):
@@ -98,7 +98,7 @@ class StockScreener:
       end_date = curr_date - datetime.timedelta(days=365)
       
       df_days = df[df['Date'] >= end_date]
-      return float(df_days['Close'].max()), float(df_days['Close'].min())
+      return round(float(df_days['Close'].max()),0), round(float(df_days['Close'].min()),0)
 
   @staticmethod
   def SMA200_slope_positive_rule(yahoo_df, ticker, days=21):
@@ -112,136 +112,15 @@ class StockScreener:
     return True, StockScreener.percent_diff(curr_avg,prev_avg), 2**5
 
   @staticmethod
-  def check_double_bottom_chart_pattern(df):
-    tickers = df['Ticker'].unique()
-    try:
-      stocks = Screener(tickers=tickers, filters=['ta_pattern_doublebottom'], table='Performance', order='price')
-    except:
-      stocks = []
-
-    print("check_double_bottom_chart_pattern: ", stocks)
-
-    df['Double Bottom Chart Pattern'] = False
-    for stock in stocks:
-      df.loc[df.Ticker == stock['Ticker'], 'Double Bottom Chart Pattern'] = True
-    return df
-
-  @staticmethod
-  def check_inverse_head_and_shoulder_chart_pattern(df):
-    tickers = df['Ticker'].unique()
-    try:
-      stocks = Screener(tickers=tickers, filters=['ta_pattern_headandshouldersinv'], table='Performance', order='price')
-    except:
-      stocks = []
-
-    print("check_inverse_head_and_shoulder_chart_pattern: ", stocks)
-
-    df['Inverse Head and Shoulder Pattern'] = False
-    for stock in stocks:
-      df.loc[df.Ticker == stock['Ticker'], 'Inverse Head and Shoulder Pattern'] = True
-    return df
-
-  @staticmethod
-  def check_multiple_bottom_chart_pattern(df):
-    tickers = df['Ticker'].unique()
-    try:
-      stocks = Screener(tickers=tickers, filters=['ta_pattern_multiplebottom'], table='Performance', order='price')
-    except:
-      stocks = []
-
-    print("check_multiple_bottom_chart_pattern: ", stocks)
-
-    df['Multiple Bottom Pattern'] = False
-    for stock in stocks:
-      df.loc[df.Ticker == stock['Ticker'], 'Multiple Bottom Pattern'] = True
-    return df
-
-  @staticmethod
-  def check_channel_up_chart_pattern(df):
-    tickers = df['Ticker'].unique()
-    try:
-      stocks = Screener(tickers=tickers, filters=['ta_pattern_channelup'], table='Performance', order='price')
-    except:
-      stocks = []
-
-    print("check_channel_up_chart_pattern: ", stocks)
-
-    df['Channel Up Pattern'] = False
-    for stock in stocks:
-      df.loc[df.Ticker == stock['Ticker'], 'Channel Up Pattern'] = True
-    return df
-
-  @staticmethod
-  def check_channel_up_strong_chart_pattern(df):
-    tickers = df['Ticker'].unique()
-    try:
-      stocks = Screener(tickers=tickers, filters=['ta_pattern_channelup2'], table='Performance', order='price')
-    except:
-      stocks = []
-
-    print("check_channel_up_strong_chart_pattern: ", stocks)
-
-    df['Channel Up Strong Pattern'] = False
-    for stock in stocks:
-      df.loc[df.Ticker == stock['Ticker'], 'Channel Up Strong Pattern'] = True
-    return df
-
-  @staticmethod
-  def check_channel_down_chart_pattern(df):
-    tickers = df['Ticker'].unique()
-    try:
-      stocks = Screener(tickers=tickers, filters=['ta_pattern_channeldown'], table='Performance', order='price')
-    except:
-      stocks = []
-
-    print("check_channel_down_chart_pattern: ", stocks)
-
-    df['Channel Down Strong Pattern'] = False
-    for stock in stocks:
-      df.loc[df.Ticker == stock['Ticker'], 'Channel Down Strong Pattern'] = True
-    return df
-
-  @staticmethod
-  def check_wedge_down_chart_pattern(df):
-    tickers = df['Ticker'].unique()
-    try:
-      stocks = Screener(tickers=tickers, filters=['ta_pattern_wedgedown'], table='Performance', order='price')
-    except:
-      stocks = []
-
-    print("check_wedge_down_chart_pattern: ", stocks)
-
-    df['Wedge Down Pattern'] = False
-    for stock in stocks:
-      df.loc[df.Ticker == stock['Ticker'], 'Wedge Down Pattern'] = True
-    return df
-
-  @staticmethod
-  def check_wedge_down_strong_chart_pattern(df):
-    tickers = df['Ticker'].unique()
-    try:
-      stocks = Screener(tickers=tickers, filters=['ta_pattern_wedgedown2'], table='Performance', order='price')
-    except:
-      stocks = []
-
-    print("check_wedge_down_strong_chart_pattern: ", stocks)
-
-    df['Wedge Down Strong Pattern'] = False
-    for stock in stocks:
-      df.loc[df.Ticker == stock['Ticker'], 'Wedge Down Strong Pattern'] = True
-    return df
-
-  @staticmethod
   def screen_stock(stock):
     try:
-      print(stock['Ticker'])
       screened_stocks = {}
 
       if stock["Ticker"] == "":
         return
 
       finviz_stats = finviz.get_stock(stock['Ticker'])
-      prev_close = float(finviz_stats['Prev Close'].replace("$",""))
+      prev_close = round(float(finviz_stats['Prev Close'].replace("$","")),0)
 
       screened_stocks[stock['Ticker']] = {}
       
@@ -260,22 +139,22 @@ class StockScreener:
       RS_value = StockScreener.relative_strength(yahoo_df, sp500_df)
       SMA50_volume_value = StockScreener.moving_average_volume(yahoo_df, days=50)
 
-      SMA200_percent = float(finviz_stats['SMA200'].replace("%",""))/100
-      SMA50_percent = float(finviz_stats['SMA50'].replace("%",""))/100
-      volume = float(finviz_stats['Volume'].replace(",",""))
+      SMA200_percent = round(float(finviz_stats['SMA200'].replace("%",""))/100,2)
+      SMA50_percent = round(float(finviz_stats['SMA50'].replace("%",""))/100,2)
+      volume = round(float(finviz_stats['Volume'].replace(",","")),0)
 
       try:
-        EPS_QoQ_percent = float(finviz_stats['EPS Q/Q'].replace("%",""))/100
+        EPS_QoQ_percent = round(float(finviz_stats['EPS Q/Q'].replace("%",""))/100,2)
       except:
         EPS_QoQ_percent = 0
 
       try:
-        Sales_QoQ_percent = float(finviz_stats['Sales Q/Q'].replace("%",""))/100
+        Sales_QoQ_percent = round(float(finviz_stats['Sales Q/Q'].replace("%",""))/100,2)
       except:
         Sales_QoQ_percent = 0
 
       try:
-        inst_own = float(finviz_stats['Inst Own'].replace("%",""))/100
+        inst_own = round(float(finviz_stats['Inst Own'].replace("%",""))/100,2)
       except:
         inst_own = 0
       
@@ -315,8 +194,8 @@ class StockScreener:
           n_value = 0.0
       score = StockScreener.percent_diff(SMA50_value,SMA150_value)
       screened_stocks[stock['Ticker']]['SMA50_greater_SMA150_rule'] = SMA50_greater_SMA150_rule
-      screened_stocks[stock['Ticker']]['SMA50_greater_SMA150_rule_score'] = n_value*score
-      screened_stocks[stock['Ticker']]['SMA50_greater_SMA150_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['SMA50_greater_SMA150_rule_score'] = round(n_value*score,0)
+      screened_stocks[stock['Ticker']]['SMA50_greater_SMA150_rule_nvalue'] = round(n_value,0)
 
       # 150d MA greater than 200d MA
       if SMA150_value > SMA200_value:
@@ -327,8 +206,8 @@ class StockScreener:
           n_value = 0.0
       score = StockScreener.percent_diff(SMA150_value,SMA200_value)
       screened_stocks[stock['Ticker']]['SMA150_greater_SMA200_rule'] = SMA150_greater_SMA200_rule
-      screened_stocks[stock['Ticker']]['SMA150_greater_SMA200_rule_score'] = n_value*score
-      screened_stocks[stock['Ticker']]['SMA150_greater_SMA200_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['SMA150_greater_SMA200_rule_score'] = round(n_value*score,0)
+      screened_stocks[stock['Ticker']]['SMA150_greater_SMA200_rule_nvalue'] = round(n_value,0)
 
       # 52 week high low span rule
       if 0.75*week52_high > 1.25*week52_low:
@@ -339,8 +218,8 @@ class StockScreener:
           n_value = 0.0
       score = StockScreener.percent_diff(0.75*week52_high, 1.25*week52_low)
       screened_stocks[stock['Ticker']]['week52_span_rule'] = week52_span_rule
-      screened_stocks[stock['Ticker']]['week52_span_rule_score'] = score*n_value
-      screened_stocks[stock['Ticker']]['week52_span_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['week52_span_rule_score'] = round(score*n_value,0)
+      screened_stocks[stock['Ticker']]['week52_span_rule_nvalue'] = round(n_value,0)
 
       # RS Value > 1.0 rule:
       if RS_value > 1.0:
@@ -352,8 +231,8 @@ class StockScreener:
       score = StockScreener.percent_diff(RS_value,1.0)
 
       screened_stocks[stock['Ticker']]['rs_value_rule'] = rs_value_rule
-      screened_stocks[stock['Ticker']]['rs_value_rule_score'] = score*n_value
-      screened_stocks[stock['Ticker']]['rs_value_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['rs_value_rule_score'] = round(score*n_value,0)
+      screened_stocks[stock['Ticker']]['rs_value_rule_nvalue'] = round(n_value,0)
 
       # Liquidity Rule
       if SMA50_value*SMA50_volume_value <= 20e6:
@@ -363,8 +242,8 @@ class StockScreener:
         liquidity_rule = True
         n_value = 2**8
       screened_stocks[stock['Ticker']]['liquidity_rule'] = liquidity_rule
-      screened_stocks[stock['Ticker']]['liquidity_rule_score'] = score*n_value
-      screened_stocks[stock['Ticker']]['liquidity_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['liquidity_rule_score'] = round(score*n_value,0)
+      screened_stocks[stock['Ticker']]['liquidity_rule_nvalue'] = round(n_value,0)
 
       # Close above 52 week high - 25%
       if prev_close > 0.75*week52_high:
@@ -375,8 +254,8 @@ class StockScreener:
           n_value = 0.0
       score = StockScreener.percent_diff(prev_close, 0.75*week52_high)
       screened_stocks[stock['Ticker']]['close_above_52weekhigh_rule'] = close_above_52weekhigh_rule
-      screened_stocks[stock['Ticker']]['close_above_52weekhigh_rule_score'] = score*n_value
-      screened_stocks[stock['Ticker']]['close_above_52weekhigh_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['close_above_52weekhigh_rule_score'] = round(score*n_value,0)
+      screened_stocks[stock['Ticker']]['close_above_52weekhigh_rule_nvalue'] = round(n_value,0)
 
       # Price greater than $10 rule
       if prev_close < 10:
@@ -386,15 +265,15 @@ class StockScreener:
         prev_close_rule = True
         n_value = 2**6
       screened_stocks[stock['Ticker']]['prev_close_rule'] = prev_close_rule
-      screened_stocks[stock['Ticker']]['prev_close_rule_score'] = score*n_value
-      screened_stocks[stock['Ticker']]['prev_close_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['prev_close_rule_score'] = round(score*n_value,0)
+      screened_stocks[stock['Ticker']]['prev_close_rule_nvalue'] = round(n_value,0)
 
 
       # Positive 200d MA
       SMA200_slope_rule, score, n_value = StockScreener.SMA200_slope_positive_rule(yahoo_df, ticker=stock['Ticker'], days=21)
       screened_stocks[stock['Ticker']]['SMA200_slope_rule'] = SMA200_slope_rule
-      screened_stocks[stock['Ticker']]['SMA200_slope_rul_score'] = n_value*score
-      screened_stocks[stock['Ticker']]['SMA200_slope_rul_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['SMA200_slope_rul_score'] = round(n_value*score,0)
+      screened_stocks[stock['Ticker']]['SMA200_slope_rul_nvalue'] = round(n_value,0)
 
       # Institutional Ownership > 5%
       if 0.05 <= inst_own:
@@ -406,8 +285,8 @@ class StockScreener:
         score = 0.0
         n_value = 0.0
       screened_stocks[stock['Ticker']]['inst_ownership_rule'] = inst_ownership_rule
-      screened_stocks[stock['Ticker']]['inst_ownership_rule_score'] = score*n_value
-      screened_stocks[stock['Ticker']]['inst_ownership_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['inst_ownership_rule_score'] = round(score*n_value,0)
+      screened_stocks[stock['Ticker']]['inst_ownership_rule_nvalue'] = round(n_value,0)
 
 
       # Close above 50d MA
@@ -419,8 +298,8 @@ class StockScreener:
           n_value = 0.0
       score = StockScreener.percent_diff(prev_close,SMA50_value)
       screened_stocks[stock['Ticker']]['close_greater_SMA50_rule'] = close_greater_SMA50_rule
-      screened_stocks[stock['Ticker']]['close_greater_SMA50_rule_score'] = score*n_value
-      screened_stocks[stock['Ticker']]['close_greater_SMA50_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['close_greater_SMA50_rule_score'] = round(score*n_value,0)
+      screened_stocks[stock['Ticker']]['close_greater_SMA50_rule_nvalue'] = round(n_value,0)
 
 
       # Sales QoQ Yearly > 25% rule
@@ -432,8 +311,8 @@ class StockScreener:
         n_value = 0.0
       score = StockScreener.percent_diff(Sales_QoQ_percent, 0.25)
       screened_stocks[stock['Ticker']]['sales_QoQ_yearly_rule'] = sales_QoQ_yearly_rule
-      screened_stocks[stock['Ticker']]['sales_QoQ_yearly_rule_score'] = n_value*score
-      screened_stocks[stock['Ticker']]['sales_QoQ_yearly_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['sales_QoQ_yearly_rule_score'] = round(n_value*score,0)
+      screened_stocks[stock['Ticker']]['sales_QoQ_yearly_rule_nvalue'] = round(n_value,0)
 
 
       # EPS QoQ Yearly > 18% rule
@@ -446,8 +325,8 @@ class StockScreener:
 
       score = StockScreener.percent_diff(EPS_QoQ_percent, 0.18)
       screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule'] = eps_QoQ_yearly_rule
-      screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule_score'] = score*n_value
-      screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule_nvalue'] = n_value
+      screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule_score'] = round(score*n_value,0)
+      screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule_nvalue'] = round(n_value,0)
 
       return screened_stocks
     except:
@@ -502,7 +381,6 @@ class StockScreener:
       if d is not None:
         screened_stocks.update(d)
       
-    print(results)
     output_list = []
     for stock in screened_stocks.keys():
         cols = ["Ticker"] + list(screened_stocks[stock].keys())
@@ -514,18 +392,6 @@ class StockScreener:
             
     df_out = pd.DataFrame(output_list,columns=cols)
     return df_out
-    
-  @staticmethod
-  def chart_pattern_screen(df_out):
-    df_passed = StockScreener.check_double_bottom_chart_pattern(df_out)
-    df_passed = StockScreener.check_inverse_head_and_shoulder_chart_pattern(df_passed)
-    df_passed = StockScreener.check_multiple_bottom_chart_pattern(df_passed)
-    df_passed = StockScreener.check_channel_up_chart_pattern(df_passed)
-    df_passed = StockScreener.check_channel_up_strong_chart_pattern(df_passed)
-    df_passed = StockScreener.check_wedge_down_chart_pattern(df_passed)
-    df_passed = StockScreener.check_wedge_down_strong_chart_pattern(df_passed)
-    df_passed = StockScreener.check_channel_down_chart_pattern(df_passed)
-    return df_passed
 
   @staticmethod
   def score_stocks(df):
@@ -543,14 +409,12 @@ class StockScreener:
     print("Starting Screener")
     stock_list = StockScreener.initial_screen()
     print("Initial Screen Done")
-    df_out = StockScreener.main_screen(stock_list).astype('float16')
+    df_out = StockScreener.main_screen(stock_list).astype('float16', errors='ignore')
     print("Main Screen Done")
-    df_out = StockScreener.cleanup_screen(df_out).astype('float16')
-    print("Cleanup Screen Done")
-    df_clean = StockScreener.chart_pattern_screen(df_out).astype('float16')
+    df_out = StockScreener.cleanup_screen(df_out).astype('float16', errors='ignore')
     print("Scoring the Stocks")
-    df_scored = StockScreener.score_stocks(df_clean).astype('float16')
-    return df_scored
+    df_out = StockScreener.score_stocks(df_out).astype('float16', errors='ignore')
+    return df_out
 
 if __name__ == "__main__":
   screener = StockScreener()

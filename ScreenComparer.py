@@ -83,4 +83,4 @@ class ScreenComparer:
 
 if __name__ == "__main__":
   comparer = ScreenComparer()
-  comparer.compare_screen("screener_results_2021_4_2.csv","screener_results_2021_4_5.csv")
+  comparer.compare_screen("screener_results_2021_4_7.csv","screener_results_2021_4_8.csv")
