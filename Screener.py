@@ -408,12 +408,19 @@ class StockScreener:
   def screen(self):
     print("Starting Screener")
     stock_list = StockScreener.initial_screen()
+    
     print("Initial Screen Done")
-    df_out = StockScreener.main_screen(stock_list).astype('float16', errors='ignore')
+    df_out = StockScreener.main_screen(stock_list)
+    cols = [col for col in df_out.columns if df_out[col].dtypes not in [bool, str]]
+    df_out[cols] = df_out[cols].astype('float32', errors='ignore')
+
     print("Main Screen Done")
-    df_out = StockScreener.cleanup_screen(df_out).astype('float16', errors='ignore')
+    df_out = StockScreener.cleanup_screen(df_out)
+    df_out[cols] = df_out[cols].astype('float32', errors='ignore')
+
     print("Scoring the Stocks")
-    df_out = StockScreener.score_stocks(df_out).astype('float16', errors='ignore')
+    df_out = StockScreener.score_stocks(df_out)
+    df_out[cols] = df_out[cols].astype('float32', errors='ignore')
     return df_out
 
 if __name__ == "__main__":
