@@ -79,7 +79,7 @@ class ScreenComparer:
 
         diff_df = ScreenComparer.compare_pd(old_screen_rules_df, new_screen_rules_df, rule_cols)
         diff_df = diff_df.sort_values(by=['N-Value Rating'], ascending=False)
-        diff_df.to_csv("screener_comparison.csv")
+        diff_df.to_csv("results/screener_comparison.csv")
 
 if __name__ == "__main__":
   comparer = ScreenComparer()

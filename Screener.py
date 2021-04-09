@@ -422,6 +422,6 @@ class StockScreener:
 if __name__ == "__main__":
   screener = StockScreener()
   df_final = screener.screen()
-  df_final.to_csv("screener_results.csv")
+  df_final.to_csv("results/screener_results.csv")
 
   

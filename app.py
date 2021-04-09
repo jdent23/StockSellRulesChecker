@@ -11,8 +11,8 @@ import os
 
 app = Flask(__name__)
 date = datetime.now()
-filename = 'screener_results'
-compare_filename = 'screener_comparison.csv'
+filename = 'results/screener_results'
+compare_filename = 'results/screener_comparison.csv'
 
 @app.route("/rules")
 def show_rules():
@@ -34,9 +34,6 @@ def show_comparison():
 def show_tables():
     date = datetime.now()
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-    
-    if not os.path.isfile(curr_filename):
-        run_screener()
 
     data = pd.read_csv(curr_filename)
     data.set_index(['Unnamed: 0'], inplace=True)
@@ -106,32 +103,7 @@ def export_comparison_table():
         return send_file(compare_filename, as_attachment=True)
     except FileNotFoundError:
         abort(404)
-
-def prev_weekday(adate):
-    adate -= timedelta(days=1)
-    while adate.weekday() > 4: # Mon-Fri are 0-4
-        adate -= timedelta(days=1)
-    return adate
     
-def run_screener():
-    print("Running Screener", file=sys.stdout)
-    screener = StockScreener()
-    df_final = screener.screen()
-
-    date = datetime.now()
-    curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-    df_final.to_csv(curr_filename)
-
-    prev_date = prev_weekday(date)
-    prev_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)
-
-    if not os.path.isfile(prev_filename):
-        temp = prev_weekday(prev_date)
-        prev_filename = "{}_{}_{}_{}.csv".format(filename, temp.year, temp.month, temp.day)
-    
-    comparer = ScreenComparer()
-    comparer.compare_screen(prev_filename, curr_filename)
-
 if __name__ == "__main__":
     app.run()
     
