@@ -21,7 +21,6 @@ def show_rules():
 @app.route("/comparison")
 def show_comparison():
     data = pd.read_csv(compare_filename)
-
     different_cols = [col for col in data.columns if "Different?" in col]
     data = data.drop(['Ticker Entered/Exited Rule?', 'N-Value Rating Entered/Exited Rule?'] + different_cols, axis=1)
     data.set_index(['Unnamed: 0'], inplace=True)
@@ -132,10 +131,6 @@ def run_screener():
     
     comparer = ScreenComparer()
     comparer.compare_screen(prev_filename, curr_filename)
-
-scheduler = APScheduler()
-scheduler.add_job(func=run_screener, args=None, trigger='cron', id='job', hour='6', minute='0')
-scheduler.start()
 
 if __name__ == "__main__":
     app.run()
