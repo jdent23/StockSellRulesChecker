@@ -21,11 +21,11 @@ class StockScreener:
 
   @staticmethod
   def initial_screen():
-    eps_5year_over0pct = True
+    eps_5year_over0pct = False
     eps_qoq_over0pct = True
     eps_yoy_over0pct = True
-    sales_5years_over0pct = True
-    sales_qoq_over0pct = True
+    sales_5years_over0pct = False
+    sales_qoq_over0pct = False
 
     filters = []
     if eps_5year_over0pct:
@@ -411,16 +411,12 @@ class StockScreener:
     
     print("Initial Screen Done")
     df_out = StockScreener.main_screen(stock_list)
-    cols = [col for col in df_out.columns if df_out[col].dtypes not in [bool, str]]
-    df_out[cols] = df_out[cols].astype('float16', errors='ignore')
 
     print("Main Screen Done")
     df_out = StockScreener.cleanup_screen(df_out)
-    df_out[cols] = df_out[cols].astype('float16', errors='ignore')
 
     print("Scoring the Stocks")
     df_out = StockScreener.score_stocks(df_out)
-    df_out[cols] = df_out[cols].astype('float16', errors='ignore')
     return df_out
 
 if __name__ == "__main__":

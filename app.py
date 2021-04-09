@@ -1,4 +1,4 @@
-from flask import *
+from flask import Flask, render_template
 import pandas as pd
 from flask_apscheduler import APScheduler
 from Screener import StockScreener
@@ -133,7 +133,6 @@ def run_screener():
     comparer = ScreenComparer()
     comparer.compare_screen(prev_filename, curr_filename)
 
-run_screener()
 scheduler = APScheduler()
 scheduler.add_job(func=run_screener, args=None, trigger='cron', id='job', hour='6', minute='0')
 scheduler.start()

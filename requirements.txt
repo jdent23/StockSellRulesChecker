@@ -4,7 +4,7 @@ pandas_datareader
 stockquotes==2.0.1
 nest_asyncio
 yfinance
-tqdm==4.43.0
+tqdm
 flask
 flask_apscheduler
 gunicorn
