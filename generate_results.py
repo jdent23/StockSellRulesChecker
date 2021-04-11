@@ -15,7 +15,7 @@ print("Running Screener")
 screener = StockScreener()
 df_final = screener.screen()
 
-date = datetime.now()
+date = datetime.utcnow()
 curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
 df_final.to_csv(curr_filename)
 

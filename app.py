@@ -10,7 +10,7 @@ from flask import send_file, send_from_directory, safe_join, abort
 import os
 
 app = Flask(__name__)
-date = datetime.now()
+date = datetime.utcnow()
 filename = 'results/screener_results'
 compare_filename = 'results/screener_comparison.csv'
 
@@ -27,12 +27,12 @@ def show_comparison():
     data.index.name=None
     data =  data.style.apply(color_changing_tests).render()
     fname = pathlib.Path(compare_filename)
-    date = datetime.now()
+    date = datetime.utcnow()
     return render_template('comparison.html',tables=[data], date=date, titles = ['Stock Screener Comparison'])
 
 @app.route("/")
 def show_tables():
-    date = datetime.now()
+    date = datetime.utcnow()
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
 
     data = pd.read_csv(curr_filename)
@@ -53,7 +53,7 @@ def show_tables():
     data =  data.style.apply(color_passing_tests).render()
 
     fname = pathlib.Path(curr_filename)
-    date = datetime.now()
+    date = datetime.utcnow()
     return render_template('view.html',tables=[data], date=date, titles = ['Stock Screener Results'])
 
 def color_changing_tests(s):
@@ -85,7 +85,7 @@ def color_passing_tests(s):
 #background process happening without any refreshing
 @app.route('/export_table')
 def export_table():
-    date = datetime.now()
+    date = datetime.utcnow()
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
     print("Sending CSV: ", curr_filename)
     safe_path = safe_join(curr_filename)

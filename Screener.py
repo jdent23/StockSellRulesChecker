@@ -422,6 +422,9 @@ class StockScreener:
 if __name__ == "__main__":
   screener = StockScreener()
   df_final = screener.screen()
-  df_final.to_csv("results/screener_results.csv")
+  date = datetime.utcnow()
+  filename = 'results/screener_results'
+  curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  df_final.to_csv(curr_filename)
 
   
