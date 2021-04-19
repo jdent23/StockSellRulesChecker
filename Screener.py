@@ -384,6 +384,7 @@ class StockScreener:
         screened_stocks.update(d)
       
     output_list = []
+    cols = None
     for stock in screened_stocks.keys():
         cols = ["Ticker"] + list(screened_stocks[stock].keys())
         temp_list = []
@@ -391,9 +392,11 @@ class StockScreener:
         for rule in screened_stocks[stock].keys():
             temp_list.append(screened_stocks[stock][rule])
         output_list.append(temp_list)
-            
-    df_out = pd.DataFrame(output_list,columns=cols)
-    return df_out
+    if cols != None:      
+      df_out = pd.DataFrame(output_list,columns=cols)
+      return df_out
+    else:
+      return None
 
   @staticmethod
   def score_stocks(df):
@@ -415,16 +418,17 @@ class StockScreener:
       print("Initial Screen Done")
       df_out = StockScreener.main_screen([stock])
 
-      print("Main Screen Done")
-      df_out = StockScreener.cleanup_screen(df_out)
+      if df_out != None:
+        print("Main Screen Done")
+        df_out = StockScreener.cleanup_screen(df_out)
 
-      print("Scoring the Stocks")
-      df_out = StockScreener.score_stocks(df_out)
+        print("Scoring the Stocks")
+        df_out = StockScreener.score_stocks(df_out)
 
-      if os.path.isfile(curr_filename):
-        df_out.to_csv(curr_filename, mode='a', header=False)
-      else:
-        df_out.to_csv(curr_filename, mode='a', header=True)
+        if os.path.isfile(curr_filename):
+          df_out.to_csv(curr_filename, mode='a', header=False)
+        else:
+          df_out.to_csv(curr_filename, mode='a', header=True)
 
 if __name__ == "__main__":
   screener = StockScreener()
