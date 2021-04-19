@@ -16,6 +16,7 @@ import time
 from tqdm.contrib.concurrent import process_map
 from tqdm import tqdm
 from shutil import copyfile
+import os
 
 class StockScreener:
 
@@ -50,7 +51,7 @@ class StockScreener:
       
       df_days = df[df['Date'] >= end_date]
       df_days = df_days[df_days['Date'] <= curr_date]
-      return round(float(df_days['Close'].mean()), 0)
+      return round(float(df_days['Close'].mean()), 2)
 
   @staticmethod
   def moving_average_volume(yahoo_df, days, delta=0):
@@ -98,7 +99,7 @@ class StockScreener:
       end_date = curr_date - datetime.timedelta(days=365)
       
       df_days = df[df['Date'] >= end_date]
-      return round(float(df_days['Close'].max()),0), round(float(df_days['Close'].min()),0)
+      return round(float(df_days['Close'].max()),0), round(float(df_days['Close'].min()),2)
 
   @staticmethod
   def SMA200_slope_positive_rule(yahoo_df, ticker, days=21):
@@ -120,7 +121,7 @@ class StockScreener:
         return
 
       finviz_stats = finviz.get_stock(stock['Ticker'])
-      prev_close = round(float(finviz_stats['Prev Close'].replace("$","")),0)
+      prev_close = round(float(finviz_stats['Prev Close'].replace("$","")),2)
 
       screened_stocks[stock['Ticker']] = {}
       
@@ -336,8 +337,9 @@ class StockScreener:
   def cleanup_screen(df_out):
 
     primary_rules = ['SMA50_greater_SMA150_rule', 'SMA150_greater_SMA200_rule', 'week52_span_rule', 
-                     'rs_value_rule', 'liquidity_rule', 'close_above_52weekhigh_rule', 'prev_close_rule', 
-                     'SMA200_slope_rule', 'inst_ownership_rule', 'close_greater_SMA50_rule', 'sales_QoQ_yearly_rule'
+                     'rs_value_rule', 'liquidity_rule', 'close_above_52weekhigh_rule',
+                     'prev_close_rule', 'SMA200_slope_rule', 'inst_ownership_rule', 'close_greater_SMA50_rule',
+                     'sales_QoQ_yearly_rule'
                      ]
 
     secondary_rules = ['eps_QoQ_yearly_rule']
@@ -365,16 +367,16 @@ class StockScreener:
   @staticmethod
   def main_screen(stock_list):
 
-    # results = []
-    # for stock in tqdm(stock_list, total=len(stock_list.data)):
-    #   try:
-    #     result = StockScreener.screen_stock(stock)
-    #     results.append(result)
-    #   except:
-    #     continue
+    results = []
+    for stock in stock_list:
+      try:
+        result = StockScreener.screen_stock(stock)
+        results.append(result)
+      except:
+        continue
 
     # Digital Ocean Does Not Support Multiprocessing
-    results = process_map(StockScreener.screen_stock, stock_list, max_workers=8)
+    # results = process_map(StockScreener.screen_stock, stock_list, max_workers=8)
 
     screened_stocks = {}
     for d in results:
@@ -405,26 +407,31 @@ class StockScreener:
 
     return df
 
-  def screen(self):
+  def screen(self, curr_filename):
     print("Starting Screener")
     stock_list = StockScreener.initial_screen()
-    
-    print("Initial Screen Done")
-    df_out = StockScreener.main_screen(stock_list)
 
-    print("Main Screen Done")
-    df_out = StockScreener.cleanup_screen(df_out)
+    for stock in tqdm(stock_list, total=len(stock_list.data)):
+      print("Initial Screen Done")
+      df_out = StockScreener.main_screen([stock])
 
-    print("Scoring the Stocks")
-    df_out = StockScreener.score_stocks(df_out)
-    return df_out
+      print("Main Screen Done")
+      df_out = StockScreener.cleanup_screen(df_out)
+
+      print("Scoring the Stocks")
+      df_out = StockScreener.score_stocks(df_out)
+
+      if os.path.isfile(curr_filename):
+        df_out.to_csv(curr_filename, mode='a', header=False)
+      else:
+        df_out.to_csv(curr_filename, mode='a', header=True)
 
 if __name__ == "__main__":
   screener = StockScreener()
-  df_final = screener.screen()
-  date = datetime.utcnow()
+  date = datetime.datetime.utcnow()
   filename = 'results/screener_results'
   curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-  df_final.to_csv(curr_filename)
+  screener.screen(curr_filename)
+  
 
   

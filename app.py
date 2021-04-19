@@ -38,6 +38,7 @@ def show_tables():
     data = pd.read_csv(curr_filename)
     data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
+    data.reset_index(inplace=True, drop=True)
 
     cols = data.columns
     cols_first_rules = [col for col in cols if "(1st)" in col]
@@ -105,5 +106,9 @@ def export_comparison_table():
         abort(404)
     
 if __name__ == "__main__":
+    curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+    #if not os.path.isfile(curr_filename):
+    screener = StockScreener()
+    screener.screen(curr_filename)
     app.run()
     
