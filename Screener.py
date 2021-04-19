@@ -392,7 +392,7 @@ class StockScreener:
         for rule in screened_stocks[stock].keys():
             temp_list.append(screened_stocks[stock][rule])
         output_list.append(temp_list)
-    if cols != None:      
+    if cols is not None:      
       df_out = pd.DataFrame(output_list,columns=cols)
       return df_out
     else:
@@ -418,7 +418,7 @@ class StockScreener:
       print("Initial Screen Done")
       df_out = StockScreener.main_screen([stock])
 
-      if df_out != None:
+      if df_out is not None:
         print("Main Screen Done")
         df_out = StockScreener.cleanup_screen(df_out)
 

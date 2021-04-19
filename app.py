@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import pathlib
 from flask import send_file, send_from_directory, safe_join, abort
 import os
+from apscheduler.schedulers.background import BackgroundScheduler
+from pytz import utc
 
 app = Flask(__name__)
 date = datetime.utcnow()
@@ -104,11 +106,18 @@ def export_comparison_table():
         return send_file(compare_filename, as_attachment=True)
     except FileNotFoundError:
         abort(404)
-    
-if __name__ == "__main__":
+
+def run_screener():
+    global date
+    date = datetime.utcnow()
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-    #if not os.path.isfile(curr_filename):
     screener = StockScreener()
     screener.screen(curr_filename)
+
+scheduler = BackgroundScheduler(timezone=utc)
+scheduler.add_job(run_screener, trigger='cron', hour='0', minute='0')
+scheduler.start()
+
+if __name__ == "__main__":
     app.run()
     
