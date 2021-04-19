@@ -21,10 +21,10 @@
     <input type="submit" value="Download Table" >
   </form>
 
-  {% for table in tables %}
-    <h2>{{titles[loop.index]}}</h2>
-    
-    {{ table|safe }}
-  {% endfor %}
+  <h2>{{titles[0]}}</h2>
+  {{ tables[0]|safe }}
+
+  <h2>{{titles[1]}}</h2>
+  {{ tables[1]|safe }}
 </div>
 
