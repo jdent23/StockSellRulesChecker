@@ -3,6 +3,7 @@ import pandas as pd
 from flask_apscheduler import APScheduler
 from Screener import StockScreener
 from ScreenComparer import ScreenComparer
+from MarketDirection import MarketDirection
 import sys
 from datetime import datetime, timedelta
 import pathlib
@@ -15,6 +16,7 @@ app = Flask(__name__)
 date = datetime.utcnow()
 filename = 'results/screener_results'
 compare_filename = 'results/screener_comparison.csv'
+market_direction_filename = 'results/market_direction'
 
 @app.route("/rules")
 def show_rules():
@@ -22,6 +24,7 @@ def show_rules():
 
 @app.route("/comparison")
 def show_comparison():
+    date = datetime.utcnow()
     data = pd.read_csv(compare_filename)
     different_cols = [col for col in data.columns if "Different?" in col]
     data = data.drop(['Ticker Entered/Exited Rule?', 'N-Value Rating Entered/Exited Rule?'] + different_cols, axis=1)
@@ -56,8 +59,17 @@ def show_tables():
     data =  data.style.apply(color_passing_tests).render()
 
     fname = pathlib.Path(curr_filename)
-    date = datetime.utcnow()
-    return render_template('view.html',tables=[data], date=date, titles = ['Stock Screener Results'])
+
+
+    market_direction = MarketDirection()
+    curr_filename = "{}_{}_{}_{}.csv".format(market_direction_filename, date.year, date.month, date.day)
+    market_direction_data = pd.read_csv(curr_filename)
+    market_direction_data.set_index(['Unnamed: 0'], inplace=True)
+    market_direction_data.index.name=None
+    market_direction_data.reset_index(inplace=True, drop=True)
+    market_direction_data =  market_direction_data.style.apply(color_passing_tests).render()
+
+    return render_template('view.html',tables=[market_direction_data, data], date=date, titles = ['Market Direction', 'Stock Screener Results'])
 
 def color_changing_tests(s):
     out = []
@@ -113,6 +125,11 @@ def run_screener():
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
     screener = StockScreener()
     screener.screen(curr_filename)
+
+    market_direction = MarketDirection()
+    curr_filename = "{}_{}_{}_{}.csv".format(market_direction_filename, date.year, date.month, date.day)
+    df_out = market_direction.market_direction(curr_filename)
+    df_out.to_csv(curr_filename)
 
 scheduler = BackgroundScheduler(timezone=utc)
 scheduler.add_job(run_screener, trigger='cron', hour='0', minute='0')
