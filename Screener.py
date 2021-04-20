@@ -426,9 +426,10 @@ class StockScreener:
         df_out = StockScreener.score_stocks(df_out)
 
         if os.path.isfile(curr_filename):
-          df_out.to_csv(curr_filename, mode='a', header=False)
+          df_out.to_csv(curr_filename, mode='a', header=False, chunksize=1)
         else:
-          df_out.to_csv(curr_filename, mode='a', header=True)
+          df_out.to_csv(curr_filename, mode='a', header=True, chunksize=1)
+      del df_out
 
 if __name__ == "__main__":
   screener = StockScreener()
