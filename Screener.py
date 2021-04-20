@@ -1,6 +1,5 @@
 from finviz.screener import Screener
 import nest_asyncio
-import finviz
 
 from pandas_datareader import data as pdr
 import yfinance as yf
@@ -13,10 +12,15 @@ import tqdm
 nest_asyncio.apply()
 
 import time
-from tqdm.contrib.concurrent import process_map
 from tqdm import tqdm
 from shutil import copyfile
 import os
+
+import gc
+import psutil
+import sys 
+from importlib import reload  
+import finviz
 
 class StockScreener:
 
@@ -114,7 +118,7 @@ class StockScreener:
 
   @staticmethod
   def screen_stock(stock):
-    try:
+    # try:
       screened_stocks = {}
 
       if stock["Ticker"] == "":
@@ -122,7 +126,6 @@ class StockScreener:
 
       finviz_stats = finviz.get_stock(stock['Ticker'])
       prev_close = round(float(finviz_stats['Prev Close'].replace("$","")),2)
-
       screened_stocks[stock['Ticker']] = {}
       
       try:
@@ -330,8 +333,8 @@ class StockScreener:
       screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule_nvalue'] = round(n_value,0)
 
       return screened_stocks
-    except:
-      return {}
+    # except:
+    #   return {}
 
   @staticmethod
   def cleanup_screen(df_out):
@@ -365,38 +368,19 @@ class StockScreener:
     return df_out
 
   @staticmethod
-  def main_screen(stock_list):
+  def main_screen(stock):
+    screened_stock = StockScreener.screen_stock(stock)
+    ticker = stock["Ticker"]
 
-    results = []
-    for stock in stock_list:
-      try:
-        result = StockScreener.screen_stock(stock)
-        results.append(result)
-      except:
-        continue
-
-    # Digital Ocean Does Not Support Multiprocessing
-    # results = process_map(StockScreener.screen_stock, stock_list, max_workers=8)
-
-    screened_stocks = {}
-    for d in results:
-      if d is not None:
-        screened_stocks.update(d)
-      
-    output_list = []
-    cols = None
-    for stock in screened_stocks.keys():
-        cols = ["Ticker"] + list(screened_stocks[stock].keys())
-        temp_list = []
-        temp_list.append(stock)
-        for rule in screened_stocks[stock].keys():
-            temp_list.append(screened_stocks[stock][rule])
-        output_list.append(temp_list)
-    if cols is not None:      
-      df_out = pd.DataFrame(output_list,columns=cols)
-      return df_out
-    else:
+    if len(screened_stock[ticker].keys()) == 0:
       return None
+      
+    output_list = [ticker]
+    cols = ["Ticker"] + list(screened_stock[ticker].keys())
+    for rule in screened_stock[ticker].keys():
+        output_list.append(screened_stock[ticker][rule])     
+    df_out = pd.DataFrame([output_list],columns=cols)
+    return df_out
 
   @staticmethod
   def score_stocks(df):
@@ -415,8 +399,10 @@ class StockScreener:
     stock_list = StockScreener.initial_screen()
 
     for stock in tqdm(stock_list, total=len(stock_list.data)):
+
       print("Initial Screen Done")
-      df_out = StockScreener.main_screen([stock])
+      df_out = StockScreener.main_screen(stock)
+      print(df_out)
 
       if df_out is not None:
         print("Main Screen Done")
@@ -429,7 +415,12 @@ class StockScreener:
           df_out.to_csv(curr_filename, mode='a', header=False, chunksize=1)
         else:
           df_out.to_csv(curr_filename, mode='a', header=True, chunksize=1)
-      del df_out
+      
+      del df_out  
+      gc.collect()
+      process = psutil.Process(os.getpid())
+      print(process.memory_info().rss)  # in bytes 
+
 
 if __name__ == "__main__":
   screener = StockScreener()
@@ -437,6 +428,6 @@ if __name__ == "__main__":
   filename = 'results/screener_results'
   curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
   screener.screen(curr_filename)
-  
+
 
   
