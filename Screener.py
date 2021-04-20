@@ -125,6 +125,7 @@ class StockScreener:
         return
 
       finviz_stats = finviz.get_stock(stock['Ticker'])
+      print(finviz_stats)
       prev_close = round(float(finviz_stats['Prev Close'].replace("$","")),2)
       screened_stocks[stock['Ticker']] = {}
       
@@ -380,6 +381,7 @@ class StockScreener:
     for rule in screened_stock[ticker].keys():
         output_list.append(screened_stock[ticker][rule])     
     df_out = pd.DataFrame([output_list],columns=cols)
+    print(df_out)
     return df_out
 
   @staticmethod
