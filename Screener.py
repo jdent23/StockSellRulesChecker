@@ -428,7 +428,7 @@ if __name__ == "__main__":
   screener = StockScreener()
   date = datetime.datetime.utcnow()
   filename = 'results/screener_results'
-  curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  curr_filename = "{}_{}_{}_{}_temp.csv".format(filename, date.year, date.month, date.day)
   screener.screen(curr_filename)
 
 
