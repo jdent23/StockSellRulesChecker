@@ -118,7 +118,7 @@ class StockScreener:
 
   @staticmethod
   def screen_stock(stock):
-    # try:
+    try:
       screened_stocks = {}
 
       if stock["Ticker"] == "":
@@ -334,8 +334,8 @@ class StockScreener:
       screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule_nvalue'] = round(n_value,0)
 
       return screened_stocks
-    # except:
-    #   return {}
+    except:
+      return {}
 
   @staticmethod
   def cleanup_screen(df_out):
