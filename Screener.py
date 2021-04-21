@@ -373,6 +373,9 @@ class StockScreener:
     screened_stock = StockScreener.screen_stock(stock)
     ticker = stock["Ticker"]
 
+    if screened_stock == {}:
+      return None
+      
     if len(screened_stock[ticker].keys()) == 0:
       return None
       
