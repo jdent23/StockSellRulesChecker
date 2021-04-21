@@ -13,11 +13,13 @@ compare_filename = 'results/screener_comparison.csv'
 
 print("Running Screener")
 screener = StockScreener()
-df_final = screener.screen()
-
 date = datetime.utcnow()
 curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-df_final.to_csv(curr_filename)
+df_final = screener.screen(curr_filename)
+
+# date = datetime.utcnow()
+# curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+# df_final.to_csv(curr_filename)
 
 prev_date = prev_weekday(date)
 prev_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)

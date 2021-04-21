@@ -64,12 +64,24 @@ def show_tables():
     market_direction = MarketDirection()
     curr_filename = "{}_{}_{}_{}.csv".format(market_direction_filename, date.year, date.month, date.day)
     market_direction_data = pd.read_csv(curr_filename)
+    num_true = market_direction_data[['SMA21_Greater_SMA50_Rule', 'SMA50_Positive_Slope_Rule']].values.sum()
+    
+    if num_true >= 3:
+        market_direction = "Upward"
+        color = "green"
+    elif num_true <= 1:
+        market_direction = "Downward"
+        color = "red"
+    else:
+        market_direction = "Sideways"
+        color = "yellow"
+
     market_direction_data.set_index(['Unnamed: 0'], inplace=True)
     market_direction_data.index.name=None
     market_direction_data.reset_index(inplace=True, drop=True)
     market_direction_data =  market_direction_data.style.apply(color_passing_tests).render()
 
-    return render_template('view.html',tables=[market_direction_data, data], date=date, titles = ['Market Direction', 'Stock Screener Results'])
+    return render_template('view.html',tables=[market_direction_data, data], date=date, titles = ['Market Direction', 'Stock Screener Results'], market_direction=market_direction, color=color)
 
 def color_changing_tests(s):
     out = []

@@ -27,8 +27,8 @@ class StockScreener:
   @staticmethod
   def initial_screen():
     eps_5year_over0pct = False
-    eps_qoq_over0pct = True
-    eps_yoy_over0pct = True
+    eps_qoq_over0pct = False
+    eps_yoy_over0pct = False
     sales_5years_over0pct = False
     sales_qoq_over0pct = False
 
@@ -370,22 +370,25 @@ class StockScreener:
 
   @staticmethod
   def main_screen(stock):
-    screened_stock = StockScreener.screen_stock(stock)
-    ticker = stock["Ticker"]
+    try:
+      screened_stock = StockScreener.screen_stock(stock)
+      ticker = stock["Ticker"]
 
-    if screened_stock == {}:
+      if screened_stock == {}:
+        return None
+
+      if len(screened_stock[ticker].keys()) == 0:
+        return None
+        
+      output_list = [ticker]
+      cols = ["Ticker"] + list(screened_stock[ticker].keys())
+      for rule in screened_stock[ticker].keys():
+          output_list.append(screened_stock[ticker][rule])     
+      df_out = pd.DataFrame([output_list],columns=cols)
+      print(df_out)
+      return df_out
+    except:
       return None
-      
-    if len(screened_stock[ticker].keys()) == 0:
-      return None
-      
-    output_list = [ticker]
-    cols = ["Ticker"] + list(screened_stock[ticker].keys())
-    for rule in screened_stock[ticker].keys():
-        output_list.append(screened_stock[ticker][rule])     
-    df_out = pd.DataFrame([output_list],columns=cols)
-    print(df_out)
-    return df_out
 
   @staticmethod
   def score_stocks(df):

@@ -43,8 +43,6 @@ class MarketDirection:
         SP500_Slope = MarketDirection.SMA50_slope_positive_rule(yahoo_df, ticker, days=21)
         market_direction["S&P500"]['SMA21_Greater_SMA50_Rule'] = bool(SP500_SMA21_value > SP500_SMA50_value)
         market_direction["S&P500"]['SMA50_Positive_Slope_Rule'] = SP500_Slope
-        market_direction["S&P500"]['SMA21'] = SP500_SMA21_value
-        market_direction["S&P500"]['SMA50'] = SP500_SMA50_value
 
         print("Getting NASDAQ Indictator")
         market_direction["NASDAQ"] = {}
@@ -55,8 +53,6 @@ class MarketDirection:
         SP500_Slope = MarketDirection.SMA50_slope_positive_rule(yahoo_df, ticker, days=21)
         market_direction["NASDAQ"]['SMA21_Greater_SMA50_Rule'] = bool(SP500_SMA21_value > SP500_SMA50_value)
         market_direction["NASDAQ"]['SMA50_Positive_Slope_Rule'] = SP500_Slope
-        market_direction["NASDAQ"]['SMA21'] = SP500_SMA21_value
-        market_direction["NASDAQ"]['SMA50'] = SP500_SMA50_value
 
 
         output_list = []
