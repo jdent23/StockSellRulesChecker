@@ -41,6 +41,7 @@ def show_tables():
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
 
     data = pd.read_csv(curr_filename)
+    data = data[data['N-Value Rating'] > 7990]
     data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
     data.reset_index(inplace=True, drop=True)
