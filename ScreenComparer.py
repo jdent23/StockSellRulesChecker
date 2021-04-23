@@ -40,21 +40,27 @@ class ScreenComparer:
             df_out['{} Entered/Exited Rule?'.format(col_temp)] = np.where(df_same_1[col] < df_same_2[col], 'Entered Rule', np.where(df_same_1[col] > df_same_2[col], 'Exited Rule', 'Did Not Change'))
 
         # Add stocks that do not exist if df2
-        cols = df_out.columns
-        for _, row in df_diff_1.iterrows():
-            new_row = []
-            for col in cols:
-                new_row.append(True)
-        temp_series = pd.Series(new_row, index = df_out.columns)
-        df_out = df_out.append(temp_series, ignore_index=True)
+        try:
+            cols = df_out.columns
+            for _, row in df_diff_1.iterrows():
+                new_row = []
+                for col in cols:
+                    new_row.append(True)
+            temp_series = pd.Series(new_row, index = df_out.columns)
+            df_out = df_out.append(temp_series, ignore_index=True)
+        except:
+            pass
 
         # Add stocks that do not exist if df1
-        for _, row in df_diff_2.iterrows():
-            new_row = []
-            for col in cols:
-                new_row.append(True)
-        temp_series = pd.Series(new_row, index = df_out.columns)
-        df_out = df_out.append(temp_series, ignore_index=True)
+        try:
+            for _, row in df_diff_2.iterrows():
+                new_row = []
+                for col in cols:
+                    new_row.append(True)
+            temp_series = pd.Series(new_row, index = df_out.columns)
+            df_out = df_out.append(temp_series, ignore_index=True)
+        except:
+            pass
 
         df_out = df_out.replace({'False': False, 'True': True})
         
@@ -83,4 +89,4 @@ class ScreenComparer:
 
 if __name__ == "__main__":
   comparer = ScreenComparer()
-  comparer.compare_screen("screener_results_2021_4_8.csv","screener_results_2021_4_9.csv")
+  comparer.compare_screen("results/screener_results_2021_4_22.csv","results/screener_results_2021_4_23.csv")

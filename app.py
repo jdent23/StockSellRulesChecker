@@ -143,9 +143,9 @@ def run_screener():
     df_out = market_direction.market_direction(curr_filename)
     df_out.to_csv(curr_filename)
 
-scheduler = BackgroundScheduler(timezone=utc)
-scheduler.add_job(run_screener, trigger='cron', hour='0', minute='0')
-scheduler.start()
+# scheduler = BackgroundScheduler(timezone=utc)
+# scheduler.add_job(run_screener, trigger='cron', hour='0', minute='0')
+# scheduler.start()
 
 if __name__ == "__main__":
     app.run()
