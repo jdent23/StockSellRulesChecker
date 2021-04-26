@@ -8,6 +8,10 @@ class ScreenComparer:
 
     @staticmethod
     def compare_pd(df1, df2, cols):
+
+        df1 = df1.drop_duplicates()
+        df2 = df2.drop_duplicates()
+        
         df1_tickers = df1['Ticker'].to_list()
         df2_tickers = df2['Ticker'].to_list()
 
@@ -89,4 +93,4 @@ class ScreenComparer:
 
 if __name__ == "__main__":
   comparer = ScreenComparer()
-  comparer.compare_screen("results/screener_results_2021_4_22.csv","results/screener_results_2021_4_23.csv")
+  comparer.compare_screen("results/screener_results_2021_4_26.csv","results/screener_results_2021_4_23.csv")
