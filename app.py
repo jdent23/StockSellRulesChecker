@@ -61,7 +61,6 @@ def show_tables():
     fname = pathlib.Path(curr_filename)
 
 
-    market_direction = MarketDirection()
     curr_filename = "{}_{}_{}_{}.csv".format(market_direction_filename, date.year, date.month, date.day)
     market_direction_data = pd.read_csv(curr_filename)
     num_true = market_direction_data[['SMA21_Greater_SMA50_Rule', 'SMA50_Positive_Slope_Rule']].values.sum()
