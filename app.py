@@ -25,6 +25,7 @@ def show_rules():
 def show_comparison():
     date = datetime.utcnow()
     data = pd.read_csv(compare_filename)
+    data = data.drop_duplicates()
     different_cols = [col for col in data.columns if "Different?" in col]
     data = data.drop(['Ticker Entered/Exited Rule?', 'N-Value Rating Entered/Exited Rule?'] + different_cols, axis=1)
     data.set_index(['Unnamed: 0'], inplace=True)
