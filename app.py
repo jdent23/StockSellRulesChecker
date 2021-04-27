@@ -1,9 +1,6 @@
 from flask import Flask, render_template
 import pandas as pd
 from flask_apscheduler import APScheduler
-from Screener import StockScreener
-from ScreenComparer import ScreenComparer
-from MarketDirection import MarketDirection
 import sys
 from datetime import datetime, timedelta
 import pathlib
@@ -13,6 +10,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 
 app = Flask(__name__)
+application = app # For beanstalk
+
 date = datetime.utcnow()
 filename = 'results/screener_results'
 compare_filename = 'results/screener_comparison.csv'
@@ -131,22 +130,6 @@ def export_comparison_table():
         return send_file(compare_filename, as_attachment=True)
     except FileNotFoundError:
         abort(404)
-
-def run_screener():
-    global date
-    date = datetime.utcnow()
-    curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-    screener = StockScreener()
-    screener.screen(curr_filename)
-
-    market_direction = MarketDirection()
-    curr_filename = "{}_{}_{}_{}.csv".format(market_direction_filename, date.year, date.month, date.day)
-    df_out = market_direction.market_direction(curr_filename)
-    df_out.to_csv(curr_filename)
-
-# scheduler = BackgroundScheduler(timezone=utc)
-# scheduler.add_job(run_screener, trigger='cron', hour='0', minute='0')
-# scheduler.start()
 
 if __name__ == "__main__":
     app.run()
