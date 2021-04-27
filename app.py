@@ -41,7 +41,7 @@ def show_tables():
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
 
     data = pd.read_csv(curr_filename)
-    data = data.drop_duplicates()
+    data = data.drop_duplicates(subset='Ticker', keep="last")
     data = data[data['N-Value Rating'] > 7990]
     data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
