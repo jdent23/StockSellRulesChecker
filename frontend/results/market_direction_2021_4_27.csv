@@ -1,0 +1,3 @@
+,Ticker,SMA21_Greater_SMA50_Rule,SMA50_Positive_Slope_Rule
+0,S&P500,True,True
+1,NASDAQ,True,False
