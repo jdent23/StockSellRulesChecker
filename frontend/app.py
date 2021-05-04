@@ -17,6 +17,11 @@ filename = 'results/screener_results'
 compare_filename = 'results/screener_comparison.csv'
 market_direction_filename = 'results/market_direction'
 
+def read_from_s3_csv(curr_filename):
+    output_file = 's3://elasticbeanstalk-us-east-2-120595873264/{}'.format(curr_filename)
+    df = pd.read_csv(output_file)
+    return df
+
 @app.route("/rules")
 def show_rules():
     return render_template('rules.html')
@@ -24,11 +29,11 @@ def show_rules():
 @app.route("/comparison")
 def show_comparison():
     date = datetime.utcnow()
-    data = pd.read_csv(compare_filename)
+    data = read_from_s3_csv(compare_filename)
     data = data.drop_duplicates()
     different_cols = [col for col in data.columns if "Different?" in col]
     data = data.drop(['Ticker Entered/Exited Rule?', 'N-Value Rating Entered/Exited Rule?'] + different_cols, axis=1)
-    data.set_index(['Unnamed: 0'], inplace=True)
+    #data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
     data =  data.style.apply(color_changing_tests).render()
     fname = pathlib.Path(compare_filename)
@@ -40,10 +45,16 @@ def show_tables():
     date = datetime.utcnow()
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
 
-    data = pd.read_csv(curr_filename)
+    try:
+        data = read_from_s3_csv(curr_filename)
+    except:
+        date = datetime.utcnow() - timedelta(days=1)
+        curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+        data = read_from_s3_csv(curr_filename)
+
     data = data.drop_duplicates(subset='Ticker', keep="last")
     data = data[data['N-Value Rating'] > 7990]
-    data.set_index(['Unnamed: 0'], inplace=True)
+    #data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
     data.reset_index(inplace=True, drop=True)
 
@@ -61,10 +72,15 @@ def show_tables():
     data =  data.style.apply(color_passing_tests).render()
 
     fname = pathlib.Path(curr_filename)
-
-
-    curr_filename = "{}_{}_{}_{}.csv".format(market_direction_filename, date.year, date.month, date.day)
-    market_direction_data = pd.read_csv(curr_filename)
+    try:
+        date = datetime.utcnow()
+        curr_filename = "{}_{}_{}_{}.csv".format(market_direction_filename, date.year, date.month, date.day)
+        market_direction_data = read_from_s3_csv(curr_filename)
+    except:
+        date = datetime.utcnow() - timedelta(days=1)
+        curr_filename = "{}_{}_{}_{}.csv".format(market_direction_filename, date.year, date.month, date.day)
+        market_direction_data = read_from_s3_csv(curr_filename)
+    
     num_true = market_direction_data[['SMA21_Greater_SMA50_Rule', 'SMA50_Positive_Slope_Rule']].values.sum()
     
     if num_true >= 3:
@@ -77,7 +93,7 @@ def show_tables():
         market_direction = "Sideways"
         color = "yellow"
 
-    market_direction_data.set_index(['Unnamed: 0'], inplace=True)
+    #market_direction_data.set_index(['Unnamed: 0'], inplace=True)
     market_direction_data.index.name=None
     market_direction_data.reset_index(inplace=True, drop=True)
     market_direction_data =  market_direction_data.style.apply(color_passing_tests).render()

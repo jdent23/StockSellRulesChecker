@@ -1,0 +1,49 @@
+service: screener-serverless-efs
+
+plugins:
+  - serverless-pseudo-parameters
+
+custom:
+  efsAccessPoint: fsap-011a3154e5392e0d2
+  LocalMountPath: /requirements
+  subnetsId: subnet-84fc43ef
+  securityGroup: sg-1a96bb6e
+
+provider:
+  name: aws
+  runtime: python3.6
+  region: us-east-2
+
+package:
+  exclude:
+    - node_modules/**
+    - .vscode/**
+    - .serverless/**
+    - .pytest_cache/**
+    - __pychache__/**
+
+functions:
+  joke:
+    handler: handler.handler
+    environment: # Service wide environment variables
+      MNT_DIR: ${self:custom.LocalMountPath}
+    vpc:
+      securityGroupIds:
+        - ${self:custom.securityGroup}
+      subnetIds:
+        - ${self:custom.subnetsId}
+    iamManagedPolicies:
+      - arn:aws:iam::aws:policy/AmazonElasticFileSystemClientReadWriteAccess
+    events:
+      - http:
+          path: joke
+          method: get
+
+resources:
+  extensions:
+    # Name of function <joke>
+    JokeLambdaFunction:
+      Properties:
+        FileSystemConfigs:
+          - Arn: 'arn:aws:elasticfilesystem:${self:provider.region}:#{AWS::AccountId}:access-point/${self:custom.efsAccessPoint}'
+            LocalMountPath: '${self:custom.LocalMountPath}'

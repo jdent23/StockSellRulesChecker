@@ -1,5 +1,7 @@
+import sys
+sys.path.append("/mnt/efs")  # nopep8 # noqa
+    
 from finviz.screener import Screener
-import nest_asyncio
 
 from pandas_datareader import data as pdr
 import yfinance as yf
@@ -9,8 +11,6 @@ import datetime
 import stockquotes
 import pandas as pd
 import tqdm
-nest_asyncio.apply()
-
 import time
 from tqdm import tqdm
 from shutil import copyfile
@@ -21,6 +21,9 @@ import psutil
 import sys 
 from importlib import reload  
 import finviz
+from multiprocessing import Pool
+from MarketDirection import MarketDirection
+from ScreenComparer import ScreenComparer
 
 class StockScreener:
 
@@ -365,7 +368,7 @@ class StockScreener:
 
     df_out.columns = cols
 
-    df_out = df_out[df_out['Primary Passed Tests']>5]
+    df_out = df_out[df_out['Primary Passed Tests']>8]
     return df_out
 
   @staticmethod
@@ -402,40 +405,66 @@ class StockScreener:
 
     return df
 
+  @staticmethod
+  def write_to_s3_csv(df, curr_filename):
+    output_file = 's3://elasticbeanstalk-us-east-2-120595873264/{}'.format(curr_filename)
+    print("Writing to S3 File: {}".format(output_file))
+    df.to_csv(output_file, index=False)
+
+  @staticmethod
+  def parallel_screen(stock):
+    print("Initial Screen Done")
+    df_out = StockScreener.main_screen(stock)
+    print(df_out)
+
+    if df_out is not None:
+      print("Main Screen Done")
+      df_out = StockScreener.cleanup_screen(df_out)
+
+      print("Scoring the Stocks")
+      df_out = StockScreener.score_stocks(df_out)
+      return df_out
+    return None
+
   def screen(self, curr_filename):
     print("Starting Screener")
     stock_list = StockScreener.initial_screen()
 
-    for stock in tqdm(stock_list, total=len(stock_list.data)):
+    with Pool(8) as p:
+      dfs = list(tqdm(p.imap(StockScreener.parallel_screen, stock_list), total=len(stock_list.data)))
 
-      print("Initial Screen Done")
-      df_out = StockScreener.main_screen(stock)
-      print(df_out)
+    df_final = pd.concat(dfs, ignore_index = True)
+    df_final.reset_index()
 
-      if df_out is not None:
-        print("Main Screen Done")
-        df_out = StockScreener.cleanup_screen(df_out)
+    StockScreener.write_to_s3_csv(df_final, curr_filename)
 
-        print("Scoring the Stocks")
-        df_out = StockScreener.score_stocks(df_out)
-
-        if os.path.isfile(curr_filename):
-          df_out.to_csv(curr_filename, mode='a', header=False, chunksize=1)
-        else:
-          df_out.to_csv(curr_filename, mode='a', header=True, chunksize=1)
-      
-      del df_out  
-      gc.collect()
-      process = psutil.Process(os.getpid())
-      print(process.memory_info().rss)  # in bytes 
-
-
-if __name__ == "__main__":
+def main():
+  # Run Screener
   screener = StockScreener()
   date = datetime.datetime.utcnow()
   filename = 'results/screener_results'
-  curr_filename = "{}_{}_{}_{}_temp.csv".format(filename, date.year, date.month, date.day)
+  curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
   screener.screen(curr_filename)
+
+  # Run Market Direction
+  market_direction = MarketDirection()
+  date = datetime.datetime.utcnow()
+  filename = 'results/market_direction'
+  curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  df_out = market_direction.market_direction(curr_filename)
+
+  # Run Screen Comparer
+  comparer = ScreenComparer()
+  filename = 'results/screener_results'
+  date = datetime.datetime.utcnow()
+  curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  prev_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+  prev_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)
+  comparer.compare_screen("s3://elasticbeanstalk-us-east-2-120595873264/{}".format(curr_filename),"s3://elasticbeanstalk-us-east-2-120595873264/{}".format(prev_filename))
+
+
+if __name__ == "__main__":
+  main()
 
 
   

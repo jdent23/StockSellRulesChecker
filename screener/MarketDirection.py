@@ -29,6 +29,12 @@ class MarketDirection:
                 return False
         return True
         
+    @staticmethod
+    def write_to_s3_csv(df, curr_filename):
+        output_file = 's3://elasticbeanstalk-us-east-2-120595873264/{}'.format(curr_filename)
+        print("Writing to S3 File: {}".format(output_file))
+        df.to_csv(output_file, index=False)
+
     def market_direction(self, curr_filename):
 
         print("Starting Market Direction")
@@ -65,6 +71,8 @@ class MarketDirection:
                 temp_list.append(market_direction[stock][rule])
             output_list.append(temp_list)
         df_out = pd.DataFrame(output_list,columns=cols)
+
+        MarketDirection.write_to_s3_csv(df_out, curr_filename)
         return df_out
 
 

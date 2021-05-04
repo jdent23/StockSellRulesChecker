@@ -9,9 +9,9 @@ class ScreenComparer:
     @staticmethod
     def compare_pd(df1, df2, cols):
 
-        df1 = df1.drop_duplicates()
-        df2 = df2.drop_duplicates()
-        
+        df1 = df1.drop_duplicates(subset='Ticker', keep="last")
+        df2 = df2.drop_duplicates(subset='Ticker', keep="last")
+
         df1_tickers = df1['Ticker'].to_list()
         df2_tickers = df2['Ticker'].to_list()
 
@@ -77,6 +77,12 @@ class ScreenComparer:
         return df_out
 
     @staticmethod
+    def write_to_s3_csv(df, curr_filename):
+        output_file = 's3://elasticbeanstalk-us-east-2-120595873264/{}'.format(curr_filename)
+        print("Writing to S3 File: {}".format(output_file))
+        df.to_csv(output_file, index=False)
+
+    @staticmethod
     def compare_screen(old_screen, new_screen):
         old_screen_df = pd.read_csv(old_screen)
         new_screen_df = pd.read_csv(new_screen)
@@ -89,8 +95,11 @@ class ScreenComparer:
 
         diff_df = ScreenComparer.compare_pd(old_screen_rules_df, new_screen_rules_df, rule_cols)
         diff_df = diff_df.sort_values(by=['N-Value Rating'], ascending=False)
-        diff_df.to_csv("results/screener_comparison.csv")
+        #diff_df.to_csv("results/screener_comparison.csv")
+        ScreenComparer.write_to_s3_csv(diff_df, "results/screener_comparison.csv")
+
+
 
 if __name__ == "__main__":
   comparer = ScreenComparer()
-  comparer.compare_screen("results/screener_results_2021_4_26.csv","results/screener_results_2021_4_23.csv")
+  comparer.compare_screen("s3://elasticbeanstalk-us-east-2-120595873264/results/screener_results_2021_5_4.csv","s3://elasticbeanstalk-us-east-2-120595873264/results/screener_results_2021_4_29.csv")

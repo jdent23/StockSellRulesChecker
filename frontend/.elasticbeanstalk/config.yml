@@ -1,0 +1,25 @@
+branch-defaults:
+  master:
+    environment: lwowski-stock-screener
+    group_suffix: null
+environment-defaults:
+  flask-env:
+    branch: null
+    repository: null
+  lwowski-stock-screener:
+    branch: null
+    repository: null
+global:
+  application_name: stock-screener
+  branch: master
+  default_ec2_keyname: aws-eb
+  default_platform: Python 3.6
+  default_region: us-east-2
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: null
+  repository: codecommit-origin
+  sc: git
+  workspace_type: Application
