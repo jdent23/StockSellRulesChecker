@@ -24,6 +24,8 @@ import finviz
 from multiprocessing import Pool
 from MarketDirection import MarketDirection
 from ScreenComparer import ScreenComparer
+from rules import *
+from utils import moving_average, relative_strength, week52_low_high, moving_average_volume
 
 class StockScreener:
 
@@ -48,76 +50,7 @@ class StockScreener:
       filters.append('fa_salesqoq_pos')
 
     stock_list = Screener(filters=filters, table='Performance', order='price')
-    return stock_list
-  
-  @staticmethod
-  def moving_average(yahoo_df, days, delta=0):
-      df = yahoo_df.reset_index()
-      curr_date = df['Date'].max() - datetime.timedelta(days=delta)
-      end_date = curr_date - datetime.timedelta(days=days) - datetime.timedelta(days=delta)
-      
-      df_days = df[df['Date'] >= end_date]
-      df_days = df_days[df_days['Date'] <= curr_date]
-      return round(float(df_days['Close'].mean()), 2)
-
-  @staticmethod
-  def moving_average_volume(yahoo_df, days, delta=0):
-      df = yahoo_df.reset_index()
-      curr_date = df['Date'].max() - datetime.timedelta(days=delta)
-      end_date = curr_date - datetime.timedelta(days=days) - datetime.timedelta(days=delta)
-      
-      df_days = df[df['Date'] >= end_date]
-      df_days = df_days[df_days['Date'] <= curr_date]
-      return round(float(df_days['Volume'].mean()), 0)
-
-  @staticmethod
-  def relative_strength(yahoo_df, sp500_df, days=65):
-    closes = yahoo_df['Close'].tolist()
-    closes.reverse()
-
-    sp_closes = sp500_df['Close'].tolist()
-    sp_closes.reverse()
-
-    # Calculate Relative Performance Indicator
-    RPs = []
-    for i in range(days):
-      RPs.append((closes[i]/ sp_closes[i])*100)
-
-    # Calcuate SMA of RPs
-    SMA = sum(RPs)/len(RPs)
-
-    # Calculate Mansfield Relative Performance indicator
-    MRP = ((RPs[0]/SMA) - 1) * 100
-    return round(MRP,0)
-
-  @staticmethod
-  def percent_diff(current, ref):
-    if current == ref:
-        return 1.0
-    try:
-        return (abs(current - ref) / ref)
-    except ZeroDivisionError:
-        return 0
-
-  @staticmethod
-  def week52_low_high(yahoo_df):
-      df = yahoo_df.reset_index()
-      curr_date = df['Date'].max()
-      end_date = curr_date - datetime.timedelta(days=365)
-      
-      df_days = df[df['Date'] >= end_date]
-      return round(float(df_days['Close'].max()),0), round(float(df_days['Close'].min()),2)
-
-  @staticmethod
-  def SMA200_slope_positive_rule(yahoo_df, ticker, days=21):
-    for day in range(days):
-      curr_avg = StockScreener.moving_average(yahoo_df, days=200, delta=day)
-      prev_avg = StockScreener.moving_average(yahoo_df, days=200, delta=day+1)
-      if curr_avg >= prev_avg:
-        continue
-      else:
-        return False, 0.0, 0.0
-    return True, StockScreener.percent_diff(curr_avg,prev_avg), 2**5
+    return stock_list  
 
   @staticmethod
   def screen_stock(stock):
@@ -141,11 +74,11 @@ class StockScreener:
       except:
         return
 
-      SMA200_value = StockScreener.moving_average(yahoo_df, days=200)
-      SMA150_value = StockScreener.moving_average(yahoo_df, days=150)
-      SMA50_value = StockScreener.moving_average(yahoo_df, days=50)
-      RS_value = StockScreener.relative_strength(yahoo_df, sp500_df)
-      SMA50_volume_value = StockScreener.moving_average_volume(yahoo_df, days=50)
+      SMA200_value = moving_average(yahoo_df, days=200)
+      SMA150_value = moving_average(yahoo_df, days=150)
+      SMA50_value = moving_average(yahoo_df, days=50)
+      RS_value = relative_strength(yahoo_df, sp500_df)
+      SMA50_volume_value = moving_average_volume(yahoo_df, days=50)
 
       SMA200_percent = round(float(finviz_stats['SMA200'].replace("%",""))/100,2)
       SMA50_percent = round(float(finviz_stats['SMA50'].replace("%",""))/100,2)
@@ -176,7 +109,7 @@ class StockScreener:
       else:
         shares_outstanding = 0
 
-      week52_high, week52_low = StockScreener.week52_low_high(yahoo_df)
+      week52_high, week52_low = week52_low_high(yahoo_df)
       
       screened_stocks[stock['Ticker']]['SMA200_value'] = SMA200_value
       screened_stocks[stock['Ticker']]['SMA150_value'] = SMA150_value
@@ -194,145 +127,78 @@ class StockScreener:
       screened_stocks[stock['Ticker']]['Relative Strength Value'] = RS_value
 
       # 50d MA greater than 150d MA
-      if SMA50_value > SMA150_value:
-          SMA50_greater_SMA150_rule = True
-          n_value = 2**12
-      else:
-          SMA50_greater_SMA150_rule = False
-          n_value = 0.0
-      score = StockScreener.percent_diff(SMA50_value,SMA150_value)
+      SMA50_greater_SMA150_rule, n_value, score = MA50gtMA150_rule(SMA50_value, SMA150_value, 12)
       screened_stocks[stock['Ticker']]['SMA50_greater_SMA150_rule'] = SMA50_greater_SMA150_rule
       screened_stocks[stock['Ticker']]['SMA50_greater_SMA150_rule_score'] = round(n_value*score,0)
       screened_stocks[stock['Ticker']]['SMA50_greater_SMA150_rule_nvalue'] = round(n_value,0)
 
       # 150d MA greater than 200d MA
-      if SMA150_value > SMA200_value:
-          SMA150_greater_SMA200_rule = True
-          n_value = 2**11
-      else:
-          SMA150_greater_SMA200_rule = False
-          n_value = 0.0
-      score = StockScreener.percent_diff(SMA150_value,SMA200_value)
+      SMA150_greater_SMA200_rule, n_value, score = MA150gtMA200_rule(SMA150_value, SMA200_value, 11)
       screened_stocks[stock['Ticker']]['SMA150_greater_SMA200_rule'] = SMA150_greater_SMA200_rule
       screened_stocks[stock['Ticker']]['SMA150_greater_SMA200_rule_score'] = round(n_value*score,0)
       screened_stocks[stock['Ticker']]['SMA150_greater_SMA200_rule_nvalue'] = round(n_value,0)
 
       # 52 week high low span rule
-      if 0.75*week52_high > 1.25*week52_low:
-          week52_span_rule = True
-          n_value = 2**10
-      else:
-          week52_span_rule = False
-          n_value = 0.0
-      score = StockScreener.percent_diff(0.75*week52_high, 1.25*week52_low)
+      week52_span_rule, n_value, score = high_low_span_52_week_rule(week52_high, week52_low, 10)
       screened_stocks[stock['Ticker']]['week52_span_rule'] = week52_span_rule
       screened_stocks[stock['Ticker']]['week52_span_rule_score'] = round(score*n_value,0)
       screened_stocks[stock['Ticker']]['week52_span_rule_nvalue'] = round(n_value,0)
 
       # RS Value > 1.0 rule:
-      if RS_value > 1.0:
-        rs_value_rule = True
-        n_value = 2**9
-      else:
-        rs_value_rule = False
-        n_value = 0.0
-      score = StockScreener.percent_diff(RS_value,1.0)
-
-      screened_stocks[stock['Ticker']]['rs_value_rule'] = rs_value_rule
+      rs_value_rule_, n_value, score = rs_value_rule(RS_value, 9)
+      screened_stocks[stock['Ticker']]['rs_value_rule'] = rs_value_rule_
       screened_stocks[stock['Ticker']]['rs_value_rule_score'] = round(score*n_value,0)
       screened_stocks[stock['Ticker']]['rs_value_rule_nvalue'] = round(n_value,0)
 
       # Liquidity Rule
-      if SMA50_value*SMA50_volume_value <= 20e6:
-        liquidity_rule = False
-        n_value = 0
-      else:
-        liquidity_rule = True
-        n_value = 2**8
-      screened_stocks[stock['Ticker']]['liquidity_rule'] = liquidity_rule
+      liquidity_rule_ = liquidity_rule(SMA50_value, SMA50_volume_value, 8)
+      screened_stocks[stock['Ticker']]['liquidity_rule'] = liquidity_rule_
       screened_stocks[stock['Ticker']]['liquidity_rule_score'] = round(score*n_value,0)
       screened_stocks[stock['Ticker']]['liquidity_rule_nvalue'] = round(n_value,0)
 
       # Close above 52 week high - 25%
-      if prev_close > 0.75*week52_high:
-          close_above_52weekhigh_rule = True
-          n_value = 2**7
-      else:
-          close_above_52weekhigh_rule = False
-          n_value = 0.0
-      score = StockScreener.percent_diff(prev_close, 0.75*week52_high)
-      screened_stocks[stock['Ticker']]['close_above_52weekhigh_rule'] = close_above_52weekhigh_rule
+      close_above_52weekhigh_rule_, n_value, score = close_above_52weekhigh_rule(prev_close, week52_high, 7)
+      screened_stocks[stock['Ticker']]['close_above_52weekhigh_rule'] = close_above_52weekhigh_rule_
       screened_stocks[stock['Ticker']]['close_above_52weekhigh_rule_score'] = round(score*n_value,0)
       screened_stocks[stock['Ticker']]['close_above_52weekhigh_rule_nvalue'] = round(n_value,0)
 
       # Price greater than $10 rule
-      if prev_close < 10:
-        prev_close_rule = False
-        n_value = 0.0
-      else:
-        prev_close_rule = True
-        n_value = 2**6
-      screened_stocks[stock['Ticker']]['prev_close_rule'] = prev_close_rule
+      prev_close_rule_, n_value, score = prev_close_rule(prev_close, 6)
+      screened_stocks[stock['Ticker']]['prev_close_rule'] = prev_close_rule_
       screened_stocks[stock['Ticker']]['prev_close_rule_score'] = round(score*n_value,0)
       screened_stocks[stock['Ticker']]['prev_close_rule_nvalue'] = round(n_value,0)
 
 
       # Positive 200d MA
-      SMA200_slope_rule, score, n_value = StockScreener.SMA200_slope_positive_rule(yahoo_df, ticker=stock['Ticker'], days=21)
+      SMA200_slope_rule, score, n_value = SMA200_slope_positive_rule(yahoo_df, ticker=stock['Ticker'], days=21, n_value_in=5)
       screened_stocks[stock['Ticker']]['SMA200_slope_rule'] = SMA200_slope_rule
       screened_stocks[stock['Ticker']]['SMA200_slope_rul_score'] = round(n_value*score,0)
       screened_stocks[stock['Ticker']]['SMA200_slope_rul_nvalue'] = round(n_value,0)
 
       # Institutional Ownership > 5%
-      if 0.05 <= inst_own:
-        inst_ownership_rule = True
-        score = score = StockScreener.percent_diff(inst_own, 0.05)
-        n_value = 2**4
-      else:
-        inst_ownership_rule = False
-        score = 0.0
-        n_value = 0.0
-      screened_stocks[stock['Ticker']]['inst_ownership_rule'] = inst_ownership_rule
+      inst_ownership_rule_, n_value, score = inst_ownership_rule(inst_own, 4)
+      screened_stocks[stock['Ticker']]['inst_ownership_rule'] = inst_ownership_rule_
       screened_stocks[stock['Ticker']]['inst_ownership_rule_score'] = round(score*n_value,0)
       screened_stocks[stock['Ticker']]['inst_ownership_rule_nvalue'] = round(n_value,0)
 
 
       # Close above 50d MA
-      if prev_close > SMA50_value:
-          close_greater_SMA50_rule = True
-          n_value = 2**3
-      else:
-          close_greater_SMA50_rule = False
-          n_value = 0.0
-      score = StockScreener.percent_diff(prev_close,SMA50_value)
-      screened_stocks[stock['Ticker']]['close_greater_SMA50_rule'] = close_greater_SMA50_rule
+      close_greater_SMA50_rule_, n_value, score = close_greater_SMA50_rule(prev_close, SMA50_value, 3)
+      screened_stocks[stock['Ticker']]['close_greater_SMA50_rule'] = close_greater_SMA50_rule_
       screened_stocks[stock['Ticker']]['close_greater_SMA50_rule_score'] = round(score*n_value,0)
       screened_stocks[stock['Ticker']]['close_greater_SMA50_rule_nvalue'] = round(n_value,0)
 
 
       # Sales QoQ Yearly > 25% rule
-      if Sales_QoQ_percent >= .25:
-        sales_QoQ_yearly_rule = True
-        n_value = 2**2
-      else:
-        sales_QoQ_yearly_rule = False
-        n_value = 0.0
-      score = StockScreener.percent_diff(Sales_QoQ_percent, 0.25)
-      screened_stocks[stock['Ticker']]['sales_QoQ_yearly_rule'] = sales_QoQ_yearly_rule
+      sales_QoQ_yearly_rule_, n_value, score = sales_QoQ_yearly_rule(Sales_QoQ_percent, 2)
+      screened_stocks[stock['Ticker']]['sales_QoQ_yearly_rule'] = sales_QoQ_yearly_rule_
       screened_stocks[stock['Ticker']]['sales_QoQ_yearly_rule_score'] = round(n_value*score,0)
       screened_stocks[stock['Ticker']]['sales_QoQ_yearly_rule_nvalue'] = round(n_value,0)
 
 
       # EPS QoQ Yearly > 18% rule
-      if EPS_QoQ_percent >= .18:
-        eps_QoQ_yearly_rule = True
-        n_value = 2**1
-      else:
-        eps_QoQ_yearly_rule = False
-        n_value = 0
-
-      score = StockScreener.percent_diff(EPS_QoQ_percent, 0.18)
-      screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule'] = eps_QoQ_yearly_rule
+      eps_QoQ_yearly_rule_, n_value, score = eps_QoQ_yearly_rule(EPS_QoQ_percent, 1)
+      screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule'] = eps_QoQ_yearly_rule_
       screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule_score'] = round(score*n_value,0)
       screened_stocks[stock['Ticker']]['eps_QoQ_yearly_rule_nvalue'] = round(n_value,0)
 
@@ -436,7 +302,7 @@ class StockScreener:
     df_final = pd.concat(dfs, ignore_index = True)
     df_final.reset_index()
 
-    StockScreener.write_to_s3_csv(df_final, curr_filename)
+    #StockScreener.write_to_s3_csv(df_final, curr_filename)
 
 def main():
   # Run Screener
