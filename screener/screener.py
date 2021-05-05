@@ -26,6 +26,7 @@ from MarketDirection import MarketDirection
 from ScreenComparer import ScreenComparer
 from rules import *
 from utils import moving_average, relative_strength, week52_low_high, moving_average_volume
+from cup_and_handle import CupAndHandleFinder
 
 class StockScreener:
 
@@ -151,7 +152,7 @@ class StockScreener:
       screened_stocks[stock['Ticker']]['rs_value_rule_nvalue'] = round(n_value,0)
 
       # Liquidity Rule
-      liquidity_rule_ = liquidity_rule(SMA50_value, SMA50_volume_value, 8)
+      liquidity_rule_, n_value, score = liquidity_rule(SMA50_value, SMA50_volume_value, 8)
       screened_stocks[stock['Ticker']]['liquidity_rule'] = liquidity_rule_
       screened_stocks[stock['Ticker']]['liquidity_rule_score'] = round(score*n_value,0)
       screened_stocks[stock['Ticker']]['liquidity_rule_nvalue'] = round(n_value,0)
@@ -302,32 +303,40 @@ class StockScreener:
     df_final = pd.concat(dfs, ignore_index = True)
     df_final.reset_index()
 
-    #StockScreener.write_to_s3_csv(df_final, curr_filename)
+    StockScreener.write_to_s3_csv(df_final, curr_filename)
 
 def main():
   # Run Screener
   screener = StockScreener()
   date = datetime.datetime.utcnow()
+  date = date - datetime.timedelta(days=1)
   filename = 'results/screener_results'
   curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-  screener.screen(curr_filename)
+  # screener.screen(curr_filename)
 
-  # Run Market Direction
-  market_direction = MarketDirection()
-  date = datetime.datetime.utcnow()
-  filename = 'results/market_direction'
-  curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-  df_out = market_direction.market_direction(curr_filename)
+  # Run Cup and Handle Pattern Recognition
+  cup_and_handle_finder = CupAndHandleFinder()
+  date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+  filename = 'results/cup_and_handle'
+  curr_cnh_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  df_out = cup_and_handle_finder.find_cup_and_handles("s3://elasticbeanstalk-us-east-2-120595873264/{}".format(curr_filename))
+  StockScreener.write_to_s3_csv(df_out, curr_cnh_filename)
 
-  # Run Screen Comparer
-  comparer = ScreenComparer()
-  filename = 'results/screener_results'
-  date = datetime.datetime.utcnow()
-  curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-  prev_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-  prev_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)
-  comparer.compare_screen("s3://elasticbeanstalk-us-east-2-120595873264/{}".format(curr_filename),"s3://elasticbeanstalk-us-east-2-120595873264/{}".format(prev_filename))
+  # # Run Market Direction
+  # market_direction = MarketDirection()
+  # date = datetime.datetime.utcnow()
+  # filename = 'results/market_direction'
+  # curr_md_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  # df_out = market_direction.market_direction(curr_md_filename)
 
+  # # Run Screen Comparer
+  # comparer = ScreenComparer()
+  # filename = 'results/screener_results'
+  # date = datetime.datetime.utcnow()
+  # curr_sc_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  # prev_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+  # prev_sc_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)
+  # comparer.compare_screen("s3://elasticbeanstalk-us-east-2-120595873264/{}".format(curr_sc_filename),"s3://elasticbeanstalk-us-east-2-120595873264/{}".format(prev_sc_filename))
 
 if __name__ == "__main__":
   main()
