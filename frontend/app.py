@@ -16,11 +16,27 @@ date = datetime.utcnow()
 filename = 'results/screener_results'
 compare_filename = 'results/screener_comparison.csv'
 market_direction_filename = 'results/market_direction'
+chart_pattern_filename = 'results/cup_and_handle'
 
 def read_from_s3_csv(curr_filename):
     output_file = 's3://elasticbeanstalk-us-east-2-120595873264/{}'.format(curr_filename)
     df = pd.read_csv(output_file)
     return df
+
+@app.route("/chart_patterns")
+def show_chart_patterns():
+    date = datetime.utcnow()
+    curr_filename = "{}_{}_{}_{}.csv".format(chart_pattern_filename, date.year, date.month, date.day)
+    try:
+        data = read_from_s3_csv(curr_filename)
+    except:
+        date = datetime.utcnow() - timedelta(days=1)
+        curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+    data = read_from_s3_csv(curr_filename)
+    data = data[data['Cup and Handle Pattern'] == True]
+    data =  data.style.apply(color_passing_tests).render()
+    print(data)
+    return render_template('chart_patterns.html',tables=[data], date=date, titles = ['Chart Patterns'])
 
 @app.route("/rules")
 def show_rules():
@@ -145,6 +161,16 @@ def export_comparison_table():
     safe_path = safe_join(compare_filename)
     try:
         return send_file(compare_filename, as_attachment=True)
+    except FileNotFoundError:
+        abort(404)
+
+#background process happening without any refreshing
+@app.route('/export_chart_patterns_table')
+def export_chart_patterns_table():
+    print("Sending CSV: ", chart_pattern_filename)
+    safe_path = safe_join(chart_pattern_filename)
+    try:
+        return send_file(chart_pattern_filename, as_attachment=True)
     except FileNotFoundError:
         abort(404)
 

@@ -3,7 +3,7 @@
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 
 <div class=page>
-  <h1>Stock Screener Results (Updated: {{ date }})</h1>
+  <h1>Chart Patterns (Updated: {{ date }})</h1>
 
   <h2>Please Donate to Keep This Webpage Active!</h2>
   <form action="https://www.paypal.com/donate" method="post" target="_top">
@@ -14,18 +14,16 @@
     <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
   </form>
 
-  <h2><a href="/rules">See Description of Screener Rules and Scoring</a></h2>
-  <h2><a href="/comparison">See Comparison to Yesterday's Screening Rules</a></h2>
-  <h2><a href="/chart_patterns">Chart Pattern Recognition Results</a></h2>
+  <h2><a href="/">Back to Screener Results</a></h2>
 
-  <form action="/export_table" method="get"> <!-- or method="post" -->
+  <form action="/export_chart_patterns_table" method="get"> <!-- or method="post" -->
     <input type="submit" value="Download Table" >
   </form>
 
-  <h2 class="market_direction_text" style="color: {{ color }};">{{titles[0]}}:  {{market_direction}}</h2>
-  {{ tables[0]|safe }}
-
-  <h2>{{titles[1]}}</h2>
-  {{ tables[1]|safe }}
+  {% for table in tables %}
+    <h2>{{titles[loop.index]}}</h2>
+    
+    {{ table|safe }}
+  {% endfor %}
 </div>
 
