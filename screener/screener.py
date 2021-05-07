@@ -309,34 +309,33 @@ def main():
   # Run Screener
   screener = StockScreener()
   date = datetime.datetime.utcnow()
-  date = date - datetime.timedelta(days=1)
   filename = 'results/screener_results'
   curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-  # screener.screen(curr_filename)
+  #screener.screen(curr_filename)
 
   # Run Cup and Handle Pattern Recognition
   cup_and_handle_finder = CupAndHandleFinder()
-  date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+  date = datetime.datetime.utcnow()
   filename = 'results/cup_and_handle'
   curr_cnh_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
   df_out = cup_and_handle_finder.find_cup_and_handles("s3://elasticbeanstalk-us-east-2-120595873264/{}".format(curr_filename))
   StockScreener.write_to_s3_csv(df_out, curr_cnh_filename)
 
-  # # Run Market Direction
-  # market_direction = MarketDirection()
-  # date = datetime.datetime.utcnow()
-  # filename = 'results/market_direction'
-  # curr_md_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-  # df_out = market_direction.market_direction(curr_md_filename)
+  # Run Market Direction
+  market_direction = MarketDirection()
+  date = datetime.datetime.utcnow()
+  filename = 'results/market_direction'
+  curr_md_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  df_out = market_direction.market_direction(curr_md_filename)
 
-  # # Run Screen Comparer
-  # comparer = ScreenComparer()
-  # filename = 'results/screener_results'
-  # date = datetime.datetime.utcnow()
-  # curr_sc_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-  # prev_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-  # prev_sc_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)
-  # comparer.compare_screen("s3://elasticbeanstalk-us-east-2-120595873264/{}".format(curr_sc_filename),"s3://elasticbeanstalk-us-east-2-120595873264/{}".format(prev_sc_filename))
+  # Run Screen Comparer
+  comparer = ScreenComparer()
+  filename = 'results/screener_results'
+  date = datetime.datetime.utcnow()
+  curr_sc_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  prev_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+  prev_sc_filename = "{}_{}_{}_{}.csv".format(filename, prev_date.year, prev_date.month, prev_date.day)
+  comparer.compare_screen("s3://elasticbeanstalk-us-east-2-120595873264/{}".format(curr_sc_filename),"s3://elasticbeanstalk-us-east-2-120595873264/{}".format(prev_sc_filename))
 
 if __name__ == "__main__":
   main()
