@@ -1,0 +1,2 @@
+python3 -m pip install requirements.txt
+npm install --prefix ./frontend/

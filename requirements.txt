@@ -16,3 +16,5 @@ user_agent~=0.1.9
 cssselect~=1.1.0
 tenacity~=7.0.0
 psutil
+fsspec
+s3fs
