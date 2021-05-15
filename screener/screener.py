@@ -27,6 +27,7 @@ from ScreenComparer import ScreenComparer
 from rules import *
 from utils import moving_average, relative_strength, week52_low_high, moving_average_volume
 from cup_and_handle import CupAndHandleFinder
+from pocket_pivot import PocketPivotFinder
 
 class StockScreener:
 
@@ -311,7 +312,7 @@ def main():
   date = datetime.datetime.utcnow()
   filename = 'results/screener_results'
   curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-  #screener.screen(curr_filename)
+  screener.screen(curr_filename)
 
   # Run Cup and Handle Pattern Recognition
   cup_and_handle_finder = CupAndHandleFinder()
@@ -319,6 +320,14 @@ def main():
   filename = 'results/cup_and_handle'
   curr_cnh_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
   df_out = cup_and_handle_finder.find_cup_and_handles("s3://elasticbeanstalk-us-east-2-120595873264/{}".format(curr_filename))
+  StockScreener.write_to_s3_csv(df_out, curr_cnh_filename)
+
+  # Run Pocket Pivot Pattern Recognition
+  pocket_pivot_finder = PocketPivotFinder()
+  date = datetime.datetime.utcnow()
+  filename = 'results/pocket_pivot'
+  curr_cnh_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
+  df_out = pocket_pivot_finder.find_pocket_pivots("s3://elasticbeanstalk-us-east-2-120595873264/{}".format(curr_filename))
   StockScreener.write_to_s3_csv(df_out, curr_cnh_filename)
 
   # Run Market Direction

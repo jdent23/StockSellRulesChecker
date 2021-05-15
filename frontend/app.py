@@ -16,7 +16,8 @@ date = datetime.utcnow()
 filename = 'results/screener_results'
 compare_filename = 'results/screener_comparison.csv'
 market_direction_filename = 'results/market_direction'
-chart_pattern_filename = 'results/cup_and_handle'
+cnh_pattern_filename = 'results/cup_and_handle'
+pp_pattern_filename = 'results/pocket_pivot'
 
 def read_from_s3_csv(curr_filename):
     output_file = 's3://elasticbeanstalk-us-east-2-120595873264/{}'.format(curr_filename)
@@ -26,16 +27,30 @@ def read_from_s3_csv(curr_filename):
 @app.route("/chart_patterns")
 def show_chart_patterns():
     date = datetime.utcnow()
-    curr_filename = "{}_{}_{}_{}.csv".format(chart_pattern_filename, date.year, date.month, date.day)
+    curr_filename = "{}_{}_{}_{}.csv".format(cnh_pattern_filename, date.year, date.month, date.day)
     try:
-        data = read_from_s3_csv(curr_filename)
+        data_cnh = read_from_s3_csv(curr_filename)
     except:
         date = datetime.utcnow() - timedelta(days=1)
-        curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
-    data = read_from_s3_csv(curr_filename)
-    data = data[data['Cup and Handle Pattern'] == True]
-    data =  data.style.apply(color_passing_tests).render()
+        curr_filename = "{}_{}_{}_{}.csv".format(cnh_pattern_filename, date.year, date.month, date.day)
+        data_cnh = read_from_s3_csv(curr_filename)
+    data_cnh = data_cnh[data_cnh['Cup and Handle Pattern'] == True]
+
+    curr_filename = "{}_{}_{}_{}.csv".format(pp_pattern_filename, date.year, date.month, date.day)
+    try:
+        data_pp = read_from_s3_csv(curr_filename)
+    except:
+        date = datetime.utcnow() - timedelta(days=1)
+        curr_filename = "{}_{}_{}_{}.csv".format(pp_pattern_filename, date.year, date.month, date.day)
+        data_pp = read_from_s3_csv(curr_filename)
+    data_pp = data_pp.drop(['Unnamed: 0'], axis=1)
+    data_pp = data_pp[data_pp['Pocket Pivot Pattern'] == True]
+
+    data = pd.merge(data_cnh, data_pp, on='Ticker', how='outer')
+    data = data.fillna(False)
     print(data)
+    
+    data =  data.style.apply(color_passing_tests).render()
     return render_template('chart_patterns.html',tables=[data], date=date, titles = ['Chart Patterns'])
 
 @app.route("/rules")
@@ -69,7 +84,7 @@ def show_tables():
         data = read_from_s3_csv(curr_filename)
 
     data = data.drop_duplicates(subset='Ticker', keep="last")
-    data = data[data['N-Value Rating'] > 7990]
+    data = data[data['N-Value Rating'] > 8178.]
     #data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
     data.reset_index(inplace=True, drop=True)
@@ -97,17 +112,21 @@ def show_tables():
         curr_filename = "{}_{}_{}_{}.csv".format(market_direction_filename, date.year, date.month, date.day)
         market_direction_data = read_from_s3_csv(curr_filename)
     
-    num_true = market_direction_data[['SMA21_Greater_SMA50_Rule', 'SMA50_Positive_Slope_Rule']].values.sum()
+    num_true_sma21 = market_direction_data['SMA21_Greater_SMA50_Rule'].values.sum()
+    num_true_slope = market_direction_data['SMA50_Positive_Slope_Rule'].values.sum()
     
-    if num_true >= 3:
-        market_direction = "Upward"
-        color = "green"
-    elif num_true <= 1:
+    if num_true_sma21 < 2:
+        market_direction = "Downward"
+        color = "red"
+    elif num_true_slope == 1:
+        market_direction = "Mixed"
+        color = "orange"
+    elif num_true_slope == 0:
         market_direction = "Downward"
         color = "red"
     else:
-        market_direction = "Sideways"
-        color = "yellow"
+        market_direction = "Upward"
+        color = "green"
 
     #market_direction_data.set_index(['Unnamed: 0'], inplace=True)
     market_direction_data.index.name=None
@@ -175,5 +194,5 @@ def export_chart_patterns_table():
         abort(404)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=12345)
     
