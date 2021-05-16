@@ -186,13 +186,20 @@ def export_comparison_table():
 #background process happening without any refreshing
 @app.route('/export_chart_patterns_table')
 def export_chart_patterns_table():
-    print("Sending CSV: ", chart_pattern_filename)
-    safe_path = safe_join(chart_pattern_filename)
+    print("Sending CSV: ", cnh_pattern_filename)
+    safe_path = safe_join(cnh_pattern_filename)
     try:
-        return send_file(chart_pattern_filename, as_attachment=True)
+        return send_file(cnh_pattern_filename, as_attachment=True)
+    except FileNotFoundError:
+        abort(404)
+
+    print("Sending CSV: ", pp_pattern_filename)
+    safe_path = safe_join(pp_pattern_filename)
+    try:
+        return send_file(pp_pattern_filename, as_attachment=True)
     except FileNotFoundError:
         abort(404)
 
 if __name__ == "__main__":
-    app.run(port=12345)
+    app.run(threaded=True)
     
