@@ -1,12 +1,20 @@
 import logo from './logo.svg';
 import './App.css';
-import { TodoPage } from './Pages/TodoPage'
+import { Header } from './Components/Header'
+import { Container } from './Components/Container'
+import { MarketDirection } from './Components/MarketDirection'
 
 function App() {
   return (
     <div className="App">
-      <TodoPage/>
+      <div className="Title">
+        <h1 className="TitleText">Stock Sell Rules Checker</h1>
+      </div>
+      <MarketDirection/>
+      <Header/>
+      <Container/>
     </div>
+
   );
 }
 

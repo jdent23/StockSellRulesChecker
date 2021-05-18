@@ -1,16 +1,18 @@
-from flask import Flask, render_template
+from flask import Flask
 import pandas as pd
 from flask_apscheduler import APScheduler
 import sys
 from datetime import datetime, timedelta
 import pathlib
 from flask import send_file, send_from_directory, safe_join, abort
+from flask_cors import CORS
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 import json
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 application = app # For beanstalk
 
 date = datetime.utcnow()
@@ -19,13 +21,28 @@ compare_filename = 'results/screener_comparison.csv'
 market_direction_filename = 'results/market_direction'
 chart_pattern_filename = 'results/cup_and_handle'
 
+
+global api_data
+api_data = {
+        "date": None,
+        "date_string": None,
+        "market_direction": None,
+        "market_direction_columns": None,
+        "market_direction_data": None,
+        "market_columns": None,
+        "market_data": None,
+        "chart_patterns_columns": None,
+        "chart_patterns_data": None,
+        "comparison_columns": None,
+        "comparison_data": None
+}
+
 def read_from_s3_csv(curr_filename):
     output_file = 's3://elasticbeanstalk-us-east-2-120595873264/{}'.format(curr_filename)
     df = pd.read_csv(output_file)
     return df
 
-@app.route("/chart_patterns")
-def show_chart_patterns():
+def calc_chart_patterns():
     date = datetime.utcnow()
     curr_filename = "{}_{}_{}_{}.csv".format(chart_pattern_filename, date.year, date.month, date.day)
     try:
@@ -35,16 +52,12 @@ def show_chart_patterns():
         curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
     data = read_from_s3_csv(curr_filename)
     data = data[data['Cup and Handle Pattern'] == True]
-    data =  data.style.apply(color_passing_tests).render()
-    print(data)
-    return render_template('chart_patterns.html',tables=[data], date=date, titles = ['Chart Patterns'])
+    #data =  data.style.apply(color_passing_tests).render()
 
-@app.route("/rules")
-def show_rules():
-    return render_template('rules.html')
+    api_data["chart_patterns_columns"] = data.columns.tolist()
+    api_data["chart_patterns_data"] = data.values.tolist()
 
-@app.route("/comparison")
-def show_comparison():
+def calc_comparison():
     date = datetime.utcnow()
     data = read_from_s3_csv(compare_filename)
     data = data.drop_duplicates()
@@ -52,13 +65,14 @@ def show_comparison():
     data = data.drop(['Ticker Entered/Exited Rule?', 'N-Value Rating Entered/Exited Rule?'] + different_cols, axis=1)
     #data.set_index(['Unnamed: 0'], inplace=True)
     data.index.name=None
-    data =  data.style.apply(color_changing_tests).render()
+    #data =  data.style.apply(color_changing_tests).render()
     fname = pathlib.Path(compare_filename)
     date = datetime.utcnow()
-    return render_template('comparison.html',tables=[data], date=date, titles = ['Stock Screener Comparison'])
 
-@app.route("/api")
-def show_tables():
+    api_data["comparison_columns"] = data.columns.tolist()
+    api_data["comparison_data"] = data.values.tolist()
+
+def calc_tables():
     date = datetime.utcnow()
     curr_filename = "{}_{}_{}_{}.csv".format(filename, date.year, date.month, date.day)
 
@@ -115,18 +129,12 @@ def show_tables():
     market_direction_data.reset_index(inplace=True, drop=True)
     #market_direction_data =  market_direction_data.style.apply(color_passing_tests).render()
 
-    return_dict = {
-        "market_direction": market_direction,
-        "color": color,
-        "titles": ['Market Direction', 'Stock Screener Results'],
-        "market_direction_columns": market_direction_data.columns.tolist(),
-        "market_direction_data": market_direction_data.values.tolist(),
-        "results_columns": data.columns.tolist(),
-        "results_data": data.values.tolist()
-    }
+    api_data["market_direction"] = market_direction
+    api_data["market_direction_columns"] = market_direction_data.columns.tolist()
+    api_data["market_direction_data"] = market_direction_data.values.tolist()
+    api_data["market_columns"] = data.columns.tolist()
+    api_data["market_data"] = data.values.tolist()
 
-    # ults'], market_direction=market_direction, color=color)
-    return json.dumps(return_dict)
 
 def color_changing_tests(s):
     out = []
@@ -186,6 +194,36 @@ def export_chart_patterns_table():
     except FileNotFoundError:
         abort(404)
 
+def api_data_test_and_set():
+
+    try:
+        if api_data["date"] != datetime.today().date():
+            print(str(api_data["date"]))
+            raise Exception("Date is expired.")
+
+        return True
+    except:
+        print("Feching latest data")
+        api_data["date"] = datetime.today().date()
+        #calc_chart_patterns()
+        calc_comparison()
+        calc_tables()
+
+    return False
+
+@app.route('/api/<topic>')
+def get_topic(topic):
+    if api_data_test_and_set():
+        if topic in ["market_direction"]:
+            api_data["date_string"] = str(api_data["date"])
+            return json.dumps({key: api_data.get(key) for key in ["date_string", topic, topic + "_columns", topic + "_data"]})
+        elif topic in ["market", "comparison"]: # ["market", "chart_patterns", "comparison"]:
+            return json.dumps({key: api_data.get(key) for key in [topic + "_columns", topic + "_data"]})
+        abort(404)
+    else:
+        get_topic(topic)
+
 if __name__ == "__main__":
+    api_data_test_and_set()
     app.run()
     

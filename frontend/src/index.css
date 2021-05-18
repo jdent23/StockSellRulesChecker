@@ -5,9 +5,109 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: black;
+}
+
+div {
+  height: 100%;
+  width: auto;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+.App {
+  width: auto;
+  height: 100%;
+  max-width: 85em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.Title {
+  width: auto;
+  height: auto;
+  background: white;
+  padding-top: 2em;
+  padding-bottom: 2em;
+  margin-top: 2em;
+  border-radius: 2em;
+}
+
+.Header {
+  height: 3em;
+}
+
+.HeaderTab {
+  float: left;
+  width: 5em;
+  height: 3em;
+  background: white;
+  text-align: center;
+  margin-left: 0.5em;
+  border-radius: 0.5em 0.5em 0em 0em;
+}
+
+.HeaderText {
+  line-height: 1em;
+}
+
+
+.Container {
+  width: auto;
+  height: fit-content;
+  background: white;
+  padding: 2em;
+  border-radius: 2em;
+}
+
+.MarketDirectionComp {
+  background: white;
+  height: fit-content;
+  width: fit-content;
+  padding: 1em 2em 2em 2em;
+  border-radius: 2em;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2em;
+  margin-top: 2em;
+}
+
+th {
+  width: 7em;
+  min-width: 7em;
+  max-width: 7em;
+  background: white;
+}
+
+.MarketDirectionSummary {
+  margin-bottom: 0.5em;
+}
+
+h3 {
+  margin-bottom: 0;
+}
+
+.Market {
+  background: black;
+  border: 0.2em solid black;
+}
+
+.MarketTable {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+.MarketData {
+  max-height: 20em;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: fit-content;
+}
+
+.FormElement {
+  margin-right: auto;
+  margin-left: 0;
+  width: fit-content;
 }
