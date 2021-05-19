@@ -11,7 +11,6 @@ function App() {
         <h1 className="TitleText">Stock Sell Rules Checker</h1>
       </div>
       <MarketDirection/>
-      <Header/>
       <Container/>
     </div>
 

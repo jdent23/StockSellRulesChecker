@@ -41,12 +41,16 @@ code {
 
 .HeaderTab {
   float: left;
-  width: 5em;
+  padding: 0 1.5em 0 1.5em;
   height: 3em;
-  background: white;
+  background: lightgray;
   text-align: center;
   margin-left: 0.5em;
   border-radius: 0.5em 0.5em 0em 0em;
+}
+
+.ActiveHeaderTab {
+  background: white;
 }
 
 .HeaderText {
@@ -75,11 +79,19 @@ code {
 }
 
 th {
-  width: 7em;
-  min-width: 7em;
-  max-width: 7em;
-  background: white;
+  width: 10em;
+  min-width: 10em;
+  max-width: 10em;
 }
+
+tr:nth-child(even) {
+  background-color: lightgray;
+}
+
+tr:nth-child(odd) {
+  background-color: white;
+}
+
 
 .MarketDirectionSummary {
   margin-bottom: 0.5em;
@@ -106,8 +118,34 @@ h3 {
   width: fit-content;
 }
 
-.FormElement {
-  margin-right: auto;
-  margin-left: 0;
+.Comparison {
+  background: black;
+  border: 0.2em solid black;
+}
+
+.ComparisonTable {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+.ComparisonData {
+  max-height: 20em;
+  overflow-y: auto;
+  overflow-x: hidden;
   width: fit-content;
+}
+
+.FormElement {
+  margin-right: 0;
+  margin-left: auto;
+  width: fit-content;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+table {
+  cursor: pointer;
 }

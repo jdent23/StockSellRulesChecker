@@ -7,6 +7,7 @@ export class TableTitles extends Component {
             <table>
                 <thead>
                     <tr>
+                        <div></div>
                         {columns.map(col => <th>{col.split('_').join(' ')}</th>)}
                     </tr>
                 </thead>
