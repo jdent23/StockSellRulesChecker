@@ -1,0 +1,77 @@
+<!doctype html>
+<title>Screening Rules</title>
+<h2><a href="/">Back to Screener Results</a></h2>
+
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+
+<div class=page>
+
+  <h1>Market Direction</h1>
+
+  <h2>21d MA greater than 50d MA Rule</h2>
+  <h4>Summary: For Index to pass SMA21 > SMA50 <br>
+
+  <h2>50 Day MA Slope Postive Rule</h2>
+  <h4>Summary: For Index to pass the 50d SMA current day has to be greater than the previous day for all of the last 21 days <br>
+
+  <h1>Stock Screener Scoring</h1>
+
+  <h2>N-Value Rating</h2>
+  <h4>To calculate this score, each rule below is given a n-value from 1-8. Then if the stock passes that rule it receives a score of 2^n.</h4>
+
+  <h2>Lwowski Rating</h2>
+  <h4>To calculate this score, the percentage difference between the actual rule's value and the passing threshold value is calculated. Then the percent difference is multiplied by the n-value score above. </h4>
+
+
+  <h1>Stock Screener Rules</h1>
+
+  <h2>50d MA greater than 150d MA Rule</h2>
+  <h4>Summary: For stocks to pass SMA50 > SMA150 <br>
+      N-Value: 12</h4>
+
+  <h2>150d MA greater than 200d MA Rule</h2>
+  <h4>Summary: For stocks to pass SMA150 > SMA200 <br>
+      N-Value: 11</h4>
+
+  <h2>52 week high low span Rule</h2>
+  <h4>Summary: For stocks to pass 0.75*week52_high > 1.25*week52_low <br>
+      N-Value: 10</h4>
+
+  <h2>Relative Strength Greater Than 1.0</h2>
+  <h4>Summary: For stocks to pass the EMA60 of ((curr_price-prev_price)/prev_price) / ((curr_price_s&p500-prev_price_s&p500)/prev_price_s&p500) has to be greater than 1.0 <br>
+      N-Value: 9</h4>
+
+  <h2>Liquidity Rule</h2>
+  <h4>Summary: For stocks to pass SMA50_value*SMA50_volume >= 20 million <br>
+      N-Value: 8</h4>
+
+  <h2>Close above 52 week high - 25% Rule</h2>
+  <h4>Summary: For stocks to pass prev_close > 0.75*week52_high <br>
+      N-Value: 7</h4>  
+
+  <h2>Previous Close Greater Than $10</h2>
+  <h4>Summary: To pass the previous close of the stock has to be greater than $10. <br>
+      N-Value: 6 </h4>
+
+  <h2>Positive 200d SMA Rule</h2>
+  <h4>Summary: For stocks to pass the 200d SMA current day has to be greater than the previous day for all of the last 21 days <br>
+      N-Value: 5</h4>
+
+  <h2>Institutional Ownership Rule</h2>
+  <h4>Summary: For stocks to pass 5% <= inst_own<br>
+      N-Value: 4</h4>
+
+  <h2>Close above 50d MA Rule</h2>
+  <h4>Summary: For stocks to pass prev_close > SMA50 <br>
+      N-Value: 3</h4>
+
+  <h2>Sales QoQ Yearly Rule</h2>
+  <h4>Summary: For stocks to pass Sales QoQ Yearly > 25% <br>
+      N-Value: 2</h4>
+
+  <h2>EPS QoQ Yearly Rule</h2>
+  <h4>Summary: For stocks to pass EPS QoQ Yearly > 18% <br>
+      N-Value: 1</h4>
+
+</div>
+

@@ -1,0 +1,190 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: black;
+}
+
+div {
+  height: 100%;
+  width: auto;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+.App {
+  width: auto;
+  height: 100%;
+  max-width: 85em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.Title {
+  width: auto;
+  height: auto;
+  background: white;
+  padding-top: 2em;
+  padding-bottom: 2em;
+  margin-top: 2em;
+  border-radius: 2em;
+}
+
+.Header {
+  height: 3em;
+}
+
+.HeaderTab {
+  float: left;
+  padding: 0 1.5em 0 1.5em;
+  height: 3em;
+  background: lightgray;
+  text-align: center;
+  margin-left: 0.5em;
+  border-radius: 0.5em 0.5em 0em 0em;
+}
+
+.ActiveHeaderTab {
+  background: white;
+}
+
+.HeaderText {
+  line-height: 1em;
+  margin-top: 1em
+}
+
+
+.Container {
+  width: auto;
+  height: fit-content;
+  background: white;
+  padding: 2em;
+  border-radius: 2em;
+}
+
+.MarketDirectionComp {
+  background: white;
+  height: fit-content;
+  width: fit-content;
+  padding: 1em 2em 2em 2em;
+  border-radius: 2em;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2em;
+  margin-top: 2em;
+}
+
+th {
+  width: 10em;
+  min-width: 10em;
+  max-width: 10em;
+}
+
+tr:nth-child(even) {
+  background-color: lightgray;
+}
+
+tr:nth-child(odd) {
+  background-color: white;
+}
+
+
+.MarketDirectionSummary {
+  margin-top: 1em;
+  border: 0.15em solid black;
+  padding-top: 0;
+}
+
+h3 {
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.Market {
+  background: black;
+  border: 0.2em solid black;
+}
+
+.MarketTable {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+.MarketData {
+  max-height: 20em;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: fit-content;
+}
+
+.Comparison {
+  background: black;
+  border: 0.2em solid black;
+}
+
+.ComparisonTable {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+.ComparisonData {
+  max-height: 20em;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: fit-content;
+}
+
+.Patterns {
+  background: black;
+  border: 0.2em solid black;
+}
+
+.PatternsTable {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+.PatternsData {
+  max-height: 20em;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: fit-content;
+}
+
+.FormElement {
+  margin-right: 0;
+  margin-left: auto;
+  width: fit-content;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+table {
+  cursor: pointer;
+}
+
+.Notifier {
+  background: white;
+  width: 20em;
+  height: fit-content;
+  position: fixed;
+  top: 20%;
+  left: 41.5%;
+  border: 0.15em solid black;
+  box-shadow: 3px 3px 10px black;
+  padding: 1em;
+  border-radius: 1em;
+}
+
+.NotifierContent {
+  max-height: 8em;
+  overflow: auto;
+}

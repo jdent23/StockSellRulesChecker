@@ -1,0 +1,17 @@
+Rule,Tier,Summary
+21d MA greater than 50d MA Rule,1st,For Index to pass SMA21 > SMA50
+50 Day MA Slope Postive Rule,2nd,For Index to pass the 50d SMA current day has to be greater than the previous day for all of the last 21 days
+N-Value Rating,3rd,"To calculate this score, each rule below is given a n-value from 1-8. Then if the stock passes that rule it receives a score of 2^n."
+Lwowski Rating,4th,"To calculate this score, the percentage difference between the actual rule's value and the passing threshold value is calculated. Then the percent difference is multiplied by the n-value score above."
+50d MA greater than 150d MA Rule,5th,For stocks to pass SMA50 > SMA150
+150d MA greater than 200d MA Rule,6th,For stocks to pass SMA150 > SMA200
+52 week high low span Rule,7th,For stocks to pass 0.75*week52_high > 1.25*week52_low
+Relative Strength Greater Than 1.0,8th,For stocks to pass the EMA60 of ((curr_price-prev_price)/prev_price) / ((curr_price_s&p500-prev_price_s&p500)/prev_price_s&p500) has to be greater than 1.0
+Liquidity Rule,9th,For stocks to pass SMA50_value*SMA50_volume >= 20 million
+Close above 52 week high - 25% Rule,10th,For stocks to pass prev_close > 0.75*week52_high
+Previous Close Greater Than $10,11th,To pass the previous close of the stock has to be greater than $10.
+Positive 200d SMA Rule,12th,For stocks to pass the 200d SMA current day has to be greater than the previous day for all of the last 21 days
+Institutional Ownership Rule,13th,For stocks to pass 5% <= inst_own
+Close above 50d MA Rule,14th,For stocks to pass prev_close > SMA50
+Sales QoQ Yearly Rule,15th,For stocks to pass Sales QoQ Yearly > 25%
+EPS QoQ Yearly Rule,16th,For stocks to pass EPS QoQ Yearly > 18%
