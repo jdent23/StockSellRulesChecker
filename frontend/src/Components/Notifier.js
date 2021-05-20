@@ -8,7 +8,7 @@ export class Notifier extends Component {
     constructor(props) {
         super(props);
         this.state = {
-          style: {visibility: "visible"},
+          style: {visibility: "hidden"},
           content: <div>This is great content</div>
         };
 
