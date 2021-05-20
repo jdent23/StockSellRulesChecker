@@ -33,6 +33,18 @@ export class Comparison extends Component {
       .catch(error => this.setState({ error }));
   }
 
+  modifyData = function(value) {
+    if(value === 1) {
+      return  <th style={{background: "green"}}>True</th>
+    } else if(value === 0) {
+      return  <th>None</th>
+    } else if(value === -1) {
+      return <th style={{background: "red"}}>False</th>
+    } else {
+      return <th>{value.toString()}</th>
+    }
+  }
+
 
 
   render() {
@@ -42,7 +54,7 @@ export class Comparison extends Component {
             <div className="ComparisonTable">
                 <TableTitles columns={this.state.comparison_columns} notifyRule={this.props.notifyRule}/>
                 <div className="ComparisonData">
-                    <TableData data={this.state.comparison_data.filter((data_row) => ApplyFilter(this.state.comparison_columns, data_row, this.state.search_options))}/>
+                    <TableData modifyData={this.modifyData} data={this.state.comparison_data.filter((data_row) => ApplyFilter(this.state.comparison_columns, data_row, this.state.search_options))}/>
                 </div>
             </div>
         </div>

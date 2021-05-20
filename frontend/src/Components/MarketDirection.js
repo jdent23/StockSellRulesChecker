@@ -28,6 +28,10 @@ export class MarketDirection extends Component {
       .catch(error => this.setState({ error }));
   }
 
+  modifyData = function(value) {
+    return <th>{value.toString()}</th>
+  }
+
   render() {
 
     var market_direction_summary_background = "yellow"
@@ -43,7 +47,7 @@ export class MarketDirection extends Component {
           <h3>{this.state.date} Market Direction: {this.state.market_direction}</h3>
         </div>
           <TableTitles columns={this.state.market_direction_columns} notifyRule={this.props.notifyRule}/>
-          <TableData data={this.state.market_direction_data}/>
+          <TableData modifyData={this.modifyData} data={this.state.market_direction_data}/>
       </div>
       <h2>Please Donate to Keep<br></br>This Webpage Active!</h2>
       <form action="https://www.paypal.com/donate" method="post" target="_top">

@@ -1,6 +1,13 @@
 import pandas as pd
 import numpy as np
 
+from enum import Enum
+
+class RuleChange(Enum):
+    ENTERED = 1
+    EXITED = -1
+    NO_CHANGE = 0
+
 class ScreenComparer:
     @staticmethod
     def enter_exit_rule(row, col, df1, df2):
@@ -41,7 +48,7 @@ class ScreenComparer:
             col_temp = col.replace(" (1st)", "").replace(" (2nd)","")
             df_out['{} Different?'.format(col_temp)] = np.where(df_same_1[col] != df_same_2[col], 'True', 'False')
             
-            df_out['{} Entered/Exited Rule?'.format(col_temp)] = np.where(df_same_1[col] < df_same_2[col], 'Entered Rule', np.where(df_same_1[col] > df_same_2[col], 'Exited Rule', 'Did Not Change'))
+            df_out['{} Entered/Exited Rule?'.format(col_temp)] = np.where(df_same_1[col] < df_same_2[col], RuleChange.ENTERED.value, np.where(df_same_1[col] > df_same_2[col], RuleChange.EXITED.value, RuleChange.NO_CHANGE.value))
 
         # Add stocks that do not exist if df2
         try:
@@ -102,4 +109,4 @@ class ScreenComparer:
 
 if __name__ == "__main__":
   comparer = ScreenComparer()
-  comparer.compare_screen("s3://elasticbeanstalk-us-east-2-120595873264/results/screener_results_2021_5_4.csv","s3://elasticbeanstalk-us-east-2-120595873264/results/screener_results_2021_4_29.csv")
+  comparer.compare_screen("s3://elasticbeanstalk-us-east-2-120595873264/results/screener_results_2021_5_20.csv","s3://elasticbeanstalk-us-east-2-120595873264/results/screener_results_2021_5_19.csv")

@@ -204,7 +204,7 @@ def api_data_test_and_set():
 
         return True
     except:
-        print("Feching latest data")
+        print("Fetching latest data")
         api_data["date"] = datetime.today().date()
         #calc_chart_patterns()
         calc_comparison()

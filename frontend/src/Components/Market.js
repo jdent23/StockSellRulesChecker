@@ -18,6 +18,16 @@ export class Market extends Component {
     }.bind(this);
   }
 
+  modifyData = function(value) {
+    if(value.toString() === "true") {
+      return  <th style={{background: "green"}}>True</th>
+    } else if(value.toString() === "false") {
+      return <th style={{background: "red"}}>False</th>
+    } else {
+      return <th>{value.toString()}</th>
+    }
+  }
+
   componentDidMount() {
     this.setState({ isLoading: true });
  
@@ -42,7 +52,7 @@ export class Market extends Component {
             <div className="MarketTable">
                 <TableTitles columns={this.state.market_columns} notifyRule={this.props.notifyRule}/>
                 <div className="MarketData">
-                    <TableData data={this.state.market_data.filter((data_row) => ApplyFilter(this.state.market_columns, data_row, this.state.search_options))}/>
+                    <TableData modifyData={this.modifyData} data={this.state.market_data.filter((data_row) => ApplyFilter(this.state.market_columns, data_row, this.state.search_options))}/>
                 </div>
             </div>
         </div>
