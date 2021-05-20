@@ -55,6 +55,7 @@ code {
 
 .HeaderText {
   line-height: 1em;
+  margin-top: 1em
 }
 
 
@@ -94,11 +95,14 @@ tr:nth-child(odd) {
 
 
 .MarketDirectionSummary {
-  margin-bottom: 0.5em;
+  margin-top: 1em;
+  border: 0.15em solid black;
+  padding-top: 0;
 }
 
 h3 {
   margin-bottom: 0;
+  margin-top: 0;
 }
 
 .Market {
@@ -135,6 +139,23 @@ h3 {
   width: fit-content;
 }
 
+.Patterns {
+  background: black;
+  border: 0.2em solid black;
+}
+
+.PatternsTable {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+.PatternsData {
+  max-height: 20em;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: fit-content;
+}
+
 .FormElement {
   margin-right: 0;
   margin-left: auto;
@@ -148,4 +169,22 @@ a {
 
 table {
   cursor: pointer;
+}
+
+.Notifier {
+  background: white;
+  width: 20em;
+  height: fit-content;
+  position: fixed;
+  top: 20%;
+  left: 41.5%;
+  border: 0.15em solid black;
+  box-shadow: 3px 3px 10px black;
+  padding: 1em;
+  border-radius: 1em;
+}
+
+.NotifierContent {
+  max-height: 8em;
+  overflow: auto;
 }

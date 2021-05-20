@@ -4,12 +4,12 @@ import { TableData } from './TableData';
 import { SearchOptions } from './SearchOptions';
 import { ApplyFilter } from './SearchOptions';
 
-export class Market extends Component {
+export class Patterns extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      market_columns: [],
-      market_data: [[]],
+      patterns_columns: [],
+      patterns_data: [[]],
       search_options: {}
     };
 
@@ -21,7 +21,7 @@ export class Market extends Component {
   componentDidMount() {
     this.setState({ isLoading: true });
  
-    fetch("http://localhost:5000/api/market")
+    fetch("http://localhost:5000/api/chart_patterns")
       .then(response => {
         if (response.ok) {
           return response.json();
@@ -29,7 +29,7 @@ export class Market extends Component {
           throw new Error('Something went wrong ...');
         }
       })
-      .then(res => this.setState({ market_columns: res.market_columns, market_data: res.market_data, filtered_data: res.market_data}))
+      .then(res => this.setState({ patterns_columns: res.patterns_columns, patterns_data: res.patterns_data, filtered_data: res.patterns_data}))
       .catch(error => this.setState({ error }));
   }
 
@@ -37,12 +37,12 @@ export class Market extends Component {
 
   render() {
 
-    return <div className="MarketComp">
-        <div className="Market">
-            <div className="MarketTable">
-                <TableTitles columns={this.state.market_columns} notifyRule={this.props.notifyRule}/>
-                <div className="MarketData">
-                    <TableData data={this.state.market_data.filter((data_row) => ApplyFilter(this.state.market_columns, data_row, this.state.search_options))}/>
+    return <div className="PatternsComp">
+        <div className="Patterns">
+            <div className="PatternsTable">
+                <TableTitles columns={this.state.patterns_columns} notifyRule={this.props.notifyRule}/>
+                <div className="PatternsData">
+                    <TableData data={this.state.patterns_data.filter((data_row) => ApplyFilter(this.state.patterns_columns, data_row, this.state.search_options))}/>
                 </div>
             </div>
         </div>
@@ -50,8 +50,8 @@ export class Market extends Component {
         <form action="http://localhost:5000/export_table" method="get">
               <input type="submit" value="Download Table"/>
         </form>
-        <SearchOptions option_names={this.state.market_columns}
-                      data_types={this.state.market_data[0].map(value => typeof(value))}
+        <SearchOptions option_names={this.state.patterns_columns}
+                      data_types={this.state.patterns_data[0].map(value => typeof(value))}
                       set_search_options={this.setSearchOptions}/>
     </div>
   }

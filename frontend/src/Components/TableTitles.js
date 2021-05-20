@@ -1,14 +1,23 @@
 import React, { Component } from 'react';
 
 export class TableTitles extends Component {
+    constructor(props) {
+      super(props);
+  
+      this.onclick = function(ev) {
+          console.log(ev.target.firstChild.data)
+        this.props.notifyRule(ev.target.firstChild.data)
+      }.bind(this)
+  
+    }
+
     render() {
         var columns = this.props.columns;
         return (
-            <table>
+            <table style={{backgroud: "white"}}>
                 <thead>
-                    <tr>
-                        <div></div>
-                        {columns.map(col => <th>{col.split('_').join(' ')}</th>)}
+                    <tr onClick={this.onclick}>
+                        {columns.map(col => <th style={{background: "#CCCCFF"}}>{col.split('_').join(' ')}</th>)}
                     </tr>
                 </thead>
             </table>

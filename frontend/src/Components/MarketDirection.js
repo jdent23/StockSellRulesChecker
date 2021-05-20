@@ -40,9 +40,9 @@ export class MarketDirection extends Component {
     return <div className="MarketDirectionComp">
       <div style={{background: "black"}}>
         <div className="MarketDirectionSummary" style={{background: market_direction_summary_background}}>
-          <h3>{this.state.date} Direction: {this.state.market_direction}</h3>
+          <h3>{this.state.date} Market Direction: {this.state.market_direction}</h3>
         </div>
-          <TableTitles columns={this.state.market_direction_columns}/>
+          <TableTitles columns={this.state.market_direction_columns} notifyRule={this.props.notifyRule}/>
           <TableData data={this.state.market_direction_data}/>
       </div>
       <h2>Please Donate to Keep<br></br>This Webpage Active!</h2>

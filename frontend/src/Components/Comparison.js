@@ -10,16 +10,11 @@ export class Comparison extends Component {
     this.state = {
       comparison_columns: [],
       comparison_data: [[]],
-      filtered_data: [[]],
-      search_options: null
+      search_options: {}
     };
 
     this.setSearchOptions = function(new_search_options) {
-      this.setState({search_options: new_search_options})
-      console.log("Parent state options")
-      console.log(new_search_options);
-      
-      this.state.filtered_data = this.state.comparison_data.filter((data_row) => ApplyFilter(this.state.comparison_columns, data_row, new_search_options));
+      this.setState({search_options: new_search_options});
     }.bind(this);
   }
 
@@ -45,9 +40,9 @@ export class Comparison extends Component {
     return <div className="ComparisonComp">
         <div className="Comparison">
             <div className="ComparisonTable">
-                <TableTitles columns={this.state.comparison_columns}/>
+                <TableTitles columns={this.state.comparison_columns} notifyRule={this.props.notifyRule}/>
                 <div className="ComparisonData">
-                    <TableData data={this.state.filtered_data}/>
+                    <TableData data={this.state.comparison_data.filter((data_row) => ApplyFilter(this.state.comparison_columns, data_row, this.state.search_options))}/>
                 </div>
             </div>
         </div>

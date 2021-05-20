@@ -10,6 +10,8 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 import json
+import time
+import threading
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -198,7 +200,6 @@ def api_data_test_and_set():
 
     try:
         if api_data["date"] != datetime.today().date():
-            print(str(api_data["date"]))
             raise Exception("Date is expired.")
 
         return True
@@ -211,19 +212,29 @@ def api_data_test_and_set():
 
     return False
 
+def get_rules():
+    rules_pd = pd.read_csv('./rules.csv')
+    return json.dumps({ rules_pd.at[i, "Rule"] : { "summary": rules_pd.at[i, "Summary"], "tier": rules_pd.at[i, "Tier"]} for i in range(0, rules_pd.shape[0])})
+
 @app.route('/api/<topic>')
 def get_topic(topic):
-    if api_data_test_and_set():
-        if topic in ["market_direction"]:
-            api_data["date_string"] = str(api_data["date"])
-            return json.dumps({key: api_data.get(key) for key in ["date_string", topic, topic + "_columns", topic + "_data"]})
-        elif topic in ["market", "comparison"]: # ["market", "chart_patterns", "comparison"]:
-            return json.dumps({key: api_data.get(key) for key in [topic + "_columns", topic + "_data"]})
-        abort(404)
-    else:
-        get_topic(topic)
+
+    if topic == "rules":
+        return get_rules()
+    elif topic in ["market_direction"]:
+        api_data["date_string"] = str(api_data["date"])
+        return json.dumps({key: api_data.get(key) for key in ["date_string", topic, topic + "_columns", topic + "_data"]})
+    elif topic in ["market", "chart_patterns", "comparison"]:
+        return json.dumps({key: api_data.get(key) for key in [topic + "_columns", topic + "_data"]})
+    abort(404)
+
+def schedule_data_fetch():
+    wait_minutes = 1
+    while True:
+        api_data_test_and_set()
+        time.sleep(wait_minutes * 60)
 
 if __name__ == "__main__":
-    api_data_test_and_set()
+    data_fetch_thread = threading.Thread(target=schedule_data_fetch, args=())
+    data_fetch_thread.start()
     app.run()
-    

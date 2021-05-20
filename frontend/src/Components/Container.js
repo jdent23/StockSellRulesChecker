@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Market } from './Market';
 import { Header } from './Header'
 import { Comparison } from './Comparison';
@@ -8,16 +8,20 @@ import {
     Route
   } from "react-router-dom";
 
-export const Container = ()=> {
-    return <div>
-                <Router>
-                    <Header/>
-                    <div className="Container">
-                            <Switch>
-                                <Route exact path="/" component={Market} />
-                                <Route path="/comparison" component={Comparison} />
-                            </Switch>
-                    </div>
-                </Router>
-           </div>
+export class Container extends Component {
+
+
+    render() {
+        return <div>
+                    <Router>
+                        <Header/>
+                        <div className="Container">
+                                <Switch>
+                                    <Route exact path="/" component={ () => <Market notifyRule={this.props.notifyRule}/> } />
+                                    <Route path="/comparison" component={ () => <Comparison notifyRule={this.props.notifyRule}/> } />
+                                </Switch>
+                        </div>
+                    </Router>
+            </div>
+    }
 }
